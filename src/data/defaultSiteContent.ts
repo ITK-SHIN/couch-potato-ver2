@@ -1,4 +1,5 @@
-import type { SiteContent } from "../types/siteContent";
+import type { PortfolioItem, SiteContent } from "../types/siteContent";
+import { generatedPortfolioItems } from "../../scripts/portfolio-items.generated";
 
 export const defaultSiteContent: SiteContent = {
   hero: {
@@ -198,89 +199,11 @@ export const defaultSiteContent: SiteContent = {
   },
   portfolio: {
     title: "포트폴리오",
-    subtitle: "브랜드·인터뷰·행사·유튜브 등 다양한 제작 사례",
-    categories: [
-      "전체",
-      "브랜드 콘텐츠",
-      "인터뷰 영상",
-      "행사 영상",
-      "숏폼 콘텐츠",
-      "유튜브",
-    ],
-    items: [
-      {
-        id: "1",
-        category: "브랜드 콘텐츠",
-        title: "스타트업 브랜드 필름",
-        client: "TechCo Korea",
-        image:
-          "https://images.unsplash.com/photo-1577190651915-bf62d54d5b36?w=600&h=400&fit=crop&auto=format",
-        duration: "3:24",
-      },
-      {
-        id: "2",
-        category: "인터뷰 영상",
-        title: "CEO 인터뷰 시리즈",
-        client: "글로벌 컨설팅",
-        image:
-          "https://images.unsplash.com/photo-1631387019069-2ff599943f9a?w=600&h=400&fit=crop&auto=format",
-        duration: "8:12",
-      },
-      {
-        id: "3",
-        category: "행사 영상",
-        title: "연간 컨퍼런스 스케치",
-        client: "미래산업협회",
-        image:
-          "https://images.unsplash.com/photo-1522327646852-4e28586a40dd?w=600&h=400&fit=crop&auto=format",
-        duration: "5:40",
-      },
-      {
-        id: "4",
-        category: "숏폼 콘텐츠",
-        title: "제품 런칭 릴스",
-        client: "뷰티 브랜드 A",
-        image:
-          "https://images.unsplash.com/photo-1574717025058-2f8737d2e2b7?w=600&h=400&fit=crop&auto=format",
-        duration: "0:45",
-      },
-      {
-        id: "5",
-        category: "유튜브",
-        title: "채널 정기 콘텐츠",
-        client: "라이프스타일 채널",
-        image:
-          "https://images.unsplash.com/photo-1612544409025-e1f6a56c1152?w=600&h=400&fit=crop&auto=format",
-        duration: "12:08",
-      },
-      {
-        id: "6",
-        category: "브랜드 콘텐츠",
-        title: "기업 홍보 영상",
-        client: "금융그룹 B",
-        image:
-          "https://images.unsplash.com/photo-1490810194309-344b3661ba39?w=600&h=400&fit=crop&auto=format",
-        duration: "2:30",
-      },
-      {
-        id: "7",
-        category: "인터뷰 영상",
-        title: "직원 스토리텔링",
-        client: "IT기업 C",
-        image:
-          "https://images.unsplash.com/photo-1688039763740-9036cb5d566e?w=600&h=400&fit=crop&auto=format",
-        duration: "4:15",
-      },
-      {
-        id: "8",
-        category: "행사 영상",
-        title: "제품 발표회 현장",
-        client: "하드웨어 스타트업",
-        image:
-          "https://images.unsplash.com/photo-1575029644286-efb9039cac46?w=600&h=400&fit=crop&auto=format",
-        duration: "6:22",
-      },
-    ],
+    subtitle: "Try to 신감독 (@TryToShinDirect.) YouTube 제작 사례",
+    categories: ["전체", "유튜브"],
+    items: generatedPortfolioItems.map((item) => ({
+      ...item,
+    })) as PortfolioItem[],
     bottomButton: "제작 문의하기 →",
   },
   contact: {

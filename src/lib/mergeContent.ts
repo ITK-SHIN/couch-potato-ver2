@@ -1,5 +1,14 @@
 import { defaultSiteContent } from "../data/defaultSiteContent";
-import type { SiteContent } from "../types/siteContent";
+import type { PortfolioItem, SiteContent } from "../types/siteContent";
+
+function normalizePortfolioItem(item: PortfolioItem): PortfolioItem {
+  return {
+    ...item,
+    videoType: item.videoType ?? "none",
+    youtubeUrl: item.youtubeUrl ?? "",
+    videoUrl: item.videoUrl ?? "",
+  };
+}
 
 export function mergeSiteContent(partial: Partial<SiteContent> | null): SiteContent {
   if (!partial) return defaultSiteContent;
@@ -24,7 +33,9 @@ export function mergeSiteContent(partial: Partial<SiteContent> | null): SiteCont
     portfolio: {
       ...defaultSiteContent.portfolio,
       ...partial.portfolio,
-      items: partial.portfolio?.items ?? defaultSiteContent.portfolio.items,
+      items: (partial.portfolio?.items ?? defaultSiteContent.portfolio.items).map(
+        normalizePortfolioItem
+      ),
       categories:
         partial.portfolio?.categories ?? defaultSiteContent.portfolio.categories,
     },

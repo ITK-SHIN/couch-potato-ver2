@@ -27,6 +27,8 @@ export interface ProcessStep {
   items: string[];
 }
 
+export type PortfolioVideoType = "none" | "youtube" | "upload";
+
 export interface PortfolioItem {
   id: string;
   category: string;
@@ -34,6 +36,12 @@ export interface PortfolioItem {
   client: string;
   image: string;
   duration: string;
+  /** 없음 | YouTube | Supabase 업로드 */
+  videoType: PortfolioVideoType;
+  /** YouTube watch·youtu.be URL */
+  youtubeUrl?: string;
+  /** Supabase Storage 등 직접 호스팅 MP4/WebM URL */
+  videoUrl?: string;
 }
 
 export interface SiteContent {

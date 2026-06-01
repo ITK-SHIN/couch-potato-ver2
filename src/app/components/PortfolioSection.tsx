@@ -1,20 +1,35 @@
 import { useState } from "react";
 import { Play } from "lucide-react";
 import { useSiteContent } from "../../context/SiteContentContext";
+import {
+  canPlayPortfolioItem,
+  getPortfolioThumbnail,
+} from "../../lib/portfolioVideo";
+import { PortfolioVideoModal } from "./PortfolioVideoModal";
+import type { PortfolioItem } from "../../types/siteContent";
 
 export function PortfolioSection() {
   const { content } = useSiteContent();
   const { title, subtitle, categories, items, bottomButton } = content.portfolio;
   const [activeCategory, setActiveCategory] = useState("전체");
   const [hovered, setHovered] = useState<string | null>(null);
+  const [playingItem, setPlayingItem] = useState<PortfolioItem | null>(null);
 
   const filtered =
     activeCategory === "전체"
       ? items
       : items.filter((p) => p.category === activeCategory);
 
+  const openItem = (item: PortfolioItem) => {
+    if (canPlayPortfolioItem(item)) {
+      setPlayingItem(item);
+    }
+  };
+
   return (
     <section id="portfolio" className="py-32 px-6 bg-secondary">
+      <PortfolioVideoModal item={playingItem} onClose={() => setPlayingItem(null)} />
+
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <span
@@ -39,6 +54,7 @@ export function PortfolioSection() {
             {categories.map((cat) => (
               <button
                 key={cat}
+                type="button"
                 onClick={() => setActiveCategory(cat)}
                 className={`px-4 py-1.5 text-xs transition-all duration-200 ${
                   activeCategory === cat
@@ -54,51 +70,83 @@ export function PortfolioSection() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filtered.map((item) => (
-            <div
-              key={item.id}
-              className="relative overflow-hidden cursor-pointer group"
-              style={{ aspectRatio: "4/3" }}
-              onMouseEnter={() => setHovered(item.id)}
-              onMouseLeave={() => setHovered(null)}
-            >
-              <img
-                src={item.image}
-                alt={item.title}
-                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-              />
+          {filtered.map((item) => {
+            const playable = canPlayPortfolioItem(item);
+            const thumb = getPortfolioThumbnail(item);
+
+            return (
               <div
-                className="absolute inset-0 bg-black/60 flex flex-col justify-between p-5 transition-opacity duration-300"
-                style={{ opacity: hovered === item.id ? 1 : 0 }}
+                key={item.id}
+                role={playable ? "button" : undefined}
+                tabIndex={playable ? 0 : undefined}
+                className={`relative overflow-hidden group ${
+                  playable ? "cursor-pointer" : "cursor-default"
+                }`}
+                style={{ aspectRatio: "4/3" }}
+                onMouseEnter={() => setHovered(item.id)}
+                onMouseLeave={() => setHovered(null)}
+                onClick={() => openItem(item)}
+                onKeyDown={(e) => {
+                  if (playable && (e.key === "Enter" || e.key === " ")) {
+                    e.preventDefault();
+                    openItem(item);
+                  }
+                }}
               >
-                <div>
-                  <span className="text-primary text-xs tracking-wider" style={{ letterSpacing: "0.1em" }}>
-                    {item.category}
-                  </span>
+                <img
+                  src={thumb}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                />
+                <div
+                  className="absolute inset-0 bg-black/60 flex flex-col justify-between p-5 transition-opacity duration-300"
+                  style={{ opacity: hovered === item.id ? 1 : 0 }}
+                >
+                  <div>
+                    <span className="text-primary text-xs tracking-wider" style={{ letterSpacing: "0.1em" }}>
+                      {item.category}
+                    </span>
+                  </div>
+                  <div>
+                    <h4 className="text-white mb-1" style={{ fontWeight: 600, fontSize: "0.95rem" }}>
+                      {item.title}
+                    </h4>
+                    <p className="text-white/60 text-xs">{item.client}</p>
+                    {playable && (
+                      <p className="text-white/50 text-xs mt-2">클릭하여 재생</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <h4 className="text-white mb-1" style={{ fontWeight: 600, fontSize: "0.95rem" }}>
-                    {item.title}
-                  </h4>
-                  <p className="text-white/60 text-xs">{item.client}</p>
+                {playable && (
+                  <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <div
+                      className="w-12 h-12 rounded-full bg-black/50 flex items-center justify-center transition-opacity duration-300"
+                      style={{ opacity: hovered === item.id ? 0 : 0.85 }}
+                    >
+                      <Play size={20} className="text-white fill-white ml-0.5" />
+                    </div>
+                  </div>
+                )}
+                {item.duration && (
+                  <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 px-2.5 py-1 rounded-full pointer-events-none">
+                    {playable && <Play size={10} className="text-white fill-white" />}
+                    <span className="text-white text-xs">{item.duration}</span>
+                  </div>
+                )}
+                <div
+                  className="absolute top-3 left-3 bg-background/80 px-2 py-0.5 transition-opacity duration-300 pointer-events-none"
+                  style={{ opacity: hovered === item.id ? 0 : 1, borderRadius: "2px" }}
+                >
+                  <span className="text-foreground/70 text-xs">{item.category}</span>
                 </div>
               </div>
-              <div className="absolute bottom-3 right-3 flex items-center gap-1.5 bg-black/70 px-2.5 py-1 rounded-full">
-                <Play size={10} className="text-white fill-white" />
-                <span className="text-white text-xs">{item.duration}</span>
-              </div>
-              <div
-                className="absolute top-3 left-3 bg-background/80 px-2 py-0.5 transition-opacity duration-300"
-                style={{ opacity: hovered === item.id ? 0 : 1, borderRadius: "2px" }}
-              >
-                <span className="text-foreground/70 text-xs">{item.category}</span>
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         <div className="text-center mt-12">
           <button
+            type="button"
             onClick={() => document.querySelector("#contact")?.scrollIntoView({ behavior: "smooth" })}
             className="border border-border text-muted-foreground px-8 py-3 text-sm hover:border-primary hover:text-primary transition-all"
             style={{ borderRadius: "2px" }}

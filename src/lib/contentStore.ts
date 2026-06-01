@@ -78,3 +78,36 @@ export async function uploadImage(file: File): Promise<string> {
   const { data } = supabase.storage.from("media").getPublicUrl(path);
   return data.publicUrl;
 }
+
+const MAX_VIDEO_BYTES = 50 * 1024 * 1024;
+const VIDEO_MIME = new Set(["video/mp4", "video/webm"]);
+
+export async function uploadVideo(file: File): Promise<string> {
+  if (!VIDEO_MIME.has(file.type)) {
+    throw new Error("MP4 또는 WebM 영상만 업로드할 수 있습니다.");
+  }
+  if (file.size > MAX_VIDEO_BYTES) {
+    throw new Error(`영상은 ${MAX_VIDEO_BYTES / (1024 * 1024)}MB 이하만 가능합니다.`);
+  }
+
+  if (!isSupabaseConfigured || !supabase) {
+    throw new Error(
+      "영상 업로드는 Supabase 연결이 필요합니다. SUPABASE_연결가이드.md를 참고하거나 YouTube URL을 사용하세요."
+    );
+  }
+
+  const ext = file.type === "video/webm" ? "webm" : "mp4";
+  const path = `videos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+
+  const { error: uploadError } = await supabase.storage
+    .from("media")
+    .upload(path, file, {
+      upsert: false,
+      contentType: file.type,
+    });
+
+  if (uploadError) throw new Error(uploadError.message);
+
+  const { data } = supabase.storage.from("media").getPublicUrl(path);
+  return data.publicUrl;
+}

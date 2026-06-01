@@ -7,7 +7,13 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { useSiteContent } from "../context/SiteContentContext";
 import { defaultSiteContent } from "../data/defaultSiteContent";
 import { serviceIconOptions } from "../lib/serviceIcons";
-import type { SiteContent, SiteSectionKey } from "../types/siteContent";
+import type {
+  PortfolioVideoType,
+  SiteContent,
+  SiteSectionKey,
+} from "../types/siteContent";
+import { emptyPortfolioItem } from "../lib/portfolioVideo";
+import { getYoutubeThumbnail, parseYoutubeId } from "../lib/youtube";
 import {
   AdminField,
   AdminInput,
@@ -16,6 +22,8 @@ import {
 } from "./components/AdminField";
 import { ImageField } from "./components/ImageField";
 import { StringListEditor } from "./components/StringListEditor";
+import { VideoField } from "./components/VideoField";
+import { PortfolioYoutubeBulkImport } from "./components/PortfolioYoutubeBulkImport";
 
 const SECTIONS: { key: SiteSectionKey; label: string }[] = [
   { key: "hero", label: "히어로" },
@@ -530,6 +538,18 @@ export function AdminPanel() {
                   }
                 />
               </AdminField>
+              <PortfolioYoutubeBulkImport
+                items={draft.portfolio.items}
+                onAddItems={(newItems) =>
+                  setDraftRoot({
+                    ...draft,
+                    portfolio: {
+                      ...draft.portfolio,
+                      items: [...draft.portfolio.items, ...newItems],
+                    },
+                  })
+                }
+              />
               {draft.portfolio.items.map((item, i) => (
                 <div key={item.id} className="p-4 border border-border space-y-3">
                   <div className="flex justify-between items-center">
@@ -588,6 +608,90 @@ export function AdminPanel() {
                       }}
                     />
                   </AdminField>
+                  <AdminField label="영상 종류">
+                    <select
+                      value={item.videoType ?? "none"}
+                      className={adminInputClass}
+                      onChange={(e) => {
+                        const videoType = e.target.value as PortfolioVideoType;
+                        const items = [...draft.portfolio.items];
+                        items[i] = {
+                          ...item,
+                          videoType,
+                          youtubeUrl:
+                            videoType === "youtube" ? item.youtubeUrl ?? "" : "",
+                          videoUrl:
+                            videoType === "upload" ? item.videoUrl ?? "" : "",
+                        };
+                        setDraftRoot({
+                          ...draft,
+                          portfolio: { ...draft.portfolio, items },
+                        });
+                      }}
+                    >
+                      <option value="none">없음 (썸네일만)</option>
+                      <option value="youtube">YouTube (권장)</option>
+                      <option value="upload">영상 업로드 (Supabase)</option>
+                    </select>
+                  </AdminField>
+                  {item.videoType === "youtube" && (
+                    <>
+                      <AdminField
+                        label="YouTube URL"
+                        hint="watch, youtu.be, shorts 링크 또는 11자리 영상 ID"
+                      >
+                        <AdminInput
+                          value={item.youtubeUrl ?? ""}
+                          placeholder="https://www.youtube.com/watch?v=..."
+                          onChange={(e) => {
+                            const items = [...draft.portfolio.items];
+                            items[i] = { ...item, youtubeUrl: e.target.value };
+                            setDraftRoot({
+                              ...draft,
+                              portfolio: { ...draft.portfolio, items },
+                            });
+                          }}
+                        />
+                      </AdminField>
+                      <button
+                        type="button"
+                        className="text-sm text-primary hover:underline"
+                        onClick={() => {
+                          const id = parseYoutubeId(item.youtubeUrl ?? "");
+                          if (!id) {
+                            toast.error("올바른 YouTube URL을 입력해 주세요.");
+                            return;
+                          }
+                          const items = [...draft.portfolio.items];
+                          items[i] = {
+                            ...item,
+                            image: getYoutubeThumbnail(id),
+                          };
+                          setDraftRoot({
+                            ...draft,
+                            portfolio: { ...draft.portfolio, items },
+                          });
+                          toast.success("YouTube 썸네일을 적용했습니다.");
+                        }}
+                      >
+                        YouTube 썸네일 적용
+                      </button>
+                    </>
+                  )}
+                  {item.videoType === "upload" && (
+                    <VideoField
+                      label="영상 파일 (MP4/WebM)"
+                      value={item.videoUrl ?? ""}
+                      onChange={(url) => {
+                        const items = [...draft.portfolio.items];
+                        items[i] = { ...item, videoUrl: url };
+                        setDraftRoot({
+                          ...draft,
+                          portfolio: { ...draft.portfolio, items },
+                        });
+                      }}
+                    />
+                  )}
                   <ImageField
                     label="썸네일"
                     value={item.image}
@@ -609,14 +713,10 @@ export function AdminPanel() {
                       ...draft.portfolio,
                       items: [
                         ...draft.portfolio.items,
-                        {
+                        emptyPortfolioItem({
                           id: newId(),
-                          category: "브랜드 콘텐츠",
-                          title: "새 작품",
-                          client: "",
                           image: defaultSiteContent.portfolio.items[0].image,
-                          duration: "0:00",
-                        },
+                        }),
                       ],
                     },
                   })
