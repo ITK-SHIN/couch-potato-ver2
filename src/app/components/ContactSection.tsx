@@ -7,23 +7,50 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useSiteContent } from "../../context/SiteContentContext";
+import { sendContactEmail } from "../../lib/sendContactEmail";
+
+const emptyForm = {
+  name: "",
+  company: "",
+  email: "",
+  phone: "",
+  service: "",
+  message: "",
+};
 
 export function ContactSection() {
   const { content } = useSiteContent();
   const c = content.contact;
-  const [form, setForm] = useState({
-    name: "",
-    company: "",
-    email: "",
-    phone: "",
-    service: "",
-    message: "",
-  });
+  const [form, setForm] = useState(emptyForm);
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setSubmitting(true);
+    setSubmitError(null);
+
+    try {
+      await sendContactEmail({
+        name: form.name.trim(),
+        company: form.company.trim() || undefined,
+        email: form.email.trim(),
+        phone: form.phone.trim() || undefined,
+        service: form.service || undefined,
+        message: form.message.trim(),
+      });
+      setSubmitted(true);
+      setForm(emptyForm);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : "문의 전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const successLines = c.successMessage.split("\n");
@@ -130,7 +157,10 @@ export function ContactSection() {
                   ))}
                 </p>
                 <button
-                  onClick={() => setSubmitted(false)}
+                  onClick={() => {
+                    setSubmitted(false);
+                    setSubmitError(null);
+                  }}
                   className="mt-8 border border-border text-muted-foreground px-6 py-2 text-sm hover:border-primary hover:text-primary transition-all"
                   style={{ borderRadius: "2px" }}
                 >
@@ -233,12 +263,16 @@ export function ContactSection() {
                     placeholder="프로젝트에 대해 간단히 소개해 주세요."
                   />
                 </div>
+                {submitError && (
+                  <p className="text-destructive text-sm text-center">{submitError}</p>
+                )}
                 <button
                   type="submit"
-                  className="w-full bg-primary text-primary-foreground py-4 text-sm tracking-wider hover:bg-primary/90 transition-colors"
+                  disabled={submitting}
+                  className="w-full bg-primary text-primary-foreground py-4 text-sm tracking-wider hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   style={{ borderRadius: "2px" }}
                 >
-                  문의 보내기
+                  {submitting ? "전송 중..." : "문의 보내기"}
                 </button>
               </form>
             )}
