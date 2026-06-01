@@ -4,6 +4,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -24,6 +25,8 @@ const SiteContentContext = createContext<SiteContentContextValue | null>(null);
 
 export function SiteContentProvider({ children }: { children: ReactNode }) {
   const [content, setContent] = useState<SiteContent>(defaultSiteContent);
+  const contentRef = useRef(content);
+  contentRef.current = content;
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
@@ -45,19 +48,16 @@ export function SiteContentProvider({ children }: { children: ReactNode }) {
     setContent(next);
   }, []);
 
-  const save = useCallback(
-    async (next?: SiteContent) => {
-      const payload = next ?? content;
-      setSaving(true);
-      try {
-        await saveSiteContent(payload);
-        setContent(payload);
-      } finally {
-        setSaving(false);
-      }
-    },
-    [content]
-  );
+  const save = useCallback(async (next?: SiteContent) => {
+    const payload = next ?? contentRef.current;
+    setSaving(true);
+    try {
+      await saveSiteContent(payload);
+      setContent(payload);
+    } finally {
+      setSaving(false);
+    }
+  }, []);
 
   const value = useMemo(
     () => ({

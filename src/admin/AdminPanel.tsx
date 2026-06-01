@@ -5,7 +5,6 @@ import { Link, useNavigate } from "react-router";
 import { toast, Toaster } from "sonner";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useSiteContent } from "../context/SiteContentContext";
-import { defaultSiteContent } from "../data/defaultSiteContent";
 import { serviceIconOptions } from "../lib/serviceIcons";
 import type { SiteContent, SiteSectionKey } from "../types/siteContent";
 import {
@@ -16,7 +15,6 @@ import {
 } from "./components/AdminField";
 import { ImageField } from "./components/ImageField";
 import { StringListEditor } from "./components/StringListEditor";
-import { VideoField } from "./components/VideoField";
 import { PortfolioCategoriesEditor } from "./components/PortfolioCategoriesEditor";
 import { PortfolioItemAddDialog } from "./components/PortfolioItemAddDialog";
 import { PortfolioItemsEditor } from "./components/PortfolioItemsEditor";
@@ -220,42 +218,54 @@ export function AdminPanel() {
                   <AdminField label="번호">
                     <AdminInput
                       value={h.num}
-                      onChange={(e) => {
-                        const highlights = [...draft.highlights];
-                        highlights[i] = { ...h, num: e.target.value };
-                        setDraftRoot({ ...draft, highlights });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          highlights: prev.highlights.map((card, idx) =>
+                            idx === i ? { ...card, num: e.target.value } : card
+                          ),
+                        }))
+                      }
                     />
                   </AdminField>
                   <AdminField label="제목">
                     <AdminInput
                       value={h.title}
-                      onChange={(e) => {
-                        const highlights = [...draft.highlights];
-                        highlights[i] = { ...h, title: e.target.value };
-                        setDraftRoot({ ...draft, highlights });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          highlights: prev.highlights.map((card, idx) =>
+                            idx === i ? { ...card, title: e.target.value } : card
+                          ),
+                        }))
+                      }
                     />
                   </AdminField>
                   <AdminField label="설명">
                     <AdminTextarea
                       value={h.desc}
-                      onChange={(e) => {
-                        const highlights = [...draft.highlights];
-                        highlights[i] = { ...h, desc: e.target.value };
-                        setDraftRoot({ ...draft, highlights });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          highlights: prev.highlights.map((card, idx) =>
+                            idx === i ? { ...card, desc: e.target.value } : card
+                          ),
+                        }))
+                      }
                     />
                   </AdminField>
                   <ImageField
                     label="이미지"
                     preset="highlight"
                     value={h.img}
-                    onChange={(next) => {
-                      const highlights = [...draft.highlights];
-                      highlights[i] = { ...h, img: next.image };
-                      setDraftRoot({ ...draft, highlights });
-                    }}
+                    onChange={(next) =>
+                      setDraftRoot((prev) => ({
+                        ...prev,
+                        highlights: prev.highlights.map((card, idx) =>
+                          idx === i ? { ...card, img: next.image } : card
+                        ),
+                      }))
+                    }
                   />
                 </div>
               ))}
@@ -378,14 +388,22 @@ export function AdminPanel() {
                   <AdminField label="아이콘">
                     <select
                       value={svc.icon}
-                      onChange={(e) => {
-                        const items = [...draft.services.items];
-                        items[i] = {
-                          ...svc,
-                          icon: e.target.value as typeof svc.icon,
-                        };
-                        setDraftRoot({ ...draft, services: { ...draft.services, items } });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          services: {
+                            ...prev.services,
+                            items: prev.services.items.map((item, idx) =>
+                              idx === i
+                                ? {
+                                    ...item,
+                                    icon: e.target.value as typeof item.icon,
+                                  }
+                                : item
+                            ),
+                          },
+                        }))
+                      }
                       className={adminInputClass}
                       style={{ borderRadius: "2px" }}
                     >
@@ -399,31 +417,49 @@ export function AdminPanel() {
                   <AdminField label="제목">
                     <AdminInput
                       value={svc.title}
-                      onChange={(e) => {
-                        const items = [...draft.services.items];
-                        items[i] = { ...svc, title: e.target.value };
-                        setDraftRoot({ ...draft, services: { ...draft.services, items } });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          services: {
+                            ...prev.services,
+                            items: prev.services.items.map((item, idx) =>
+                              idx === i ? { ...item, title: e.target.value } : item
+                            ),
+                          },
+                        }))
+                      }
                     />
                   </AdminField>
                   <AdminField label="짧은 설명">
                     <AdminTextarea
                       value={svc.desc}
-                      onChange={(e) => {
-                        const items = [...draft.services.items];
-                        items[i] = { ...svc, desc: e.target.value };
-                        setDraftRoot({ ...draft, services: { ...draft.services, items } });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          services: {
+                            ...prev.services,
+                            items: prev.services.items.map((item, idx) =>
+                              idx === i ? { ...item, desc: e.target.value } : item
+                            ),
+                          },
+                        }))
+                      }
                     />
                   </AdminField>
                   <AdminField label="상세 설명">
                     <AdminTextarea
                       value={svc.detail}
-                      onChange={(e) => {
-                        const items = [...draft.services.items];
-                        items[i] = { ...svc, detail: e.target.value };
-                        setDraftRoot({ ...draft, services: { ...draft.services, items } });
-                      }}
+                      onChange={(e) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          services: {
+                            ...prev.services,
+                            items: prev.services.items.map((item, idx) =>
+                              idx === i ? { ...item, detail: e.target.value } : item
+                            ),
+                          },
+                        }))
+                      }
                     />
                   </AdminField>
                 </div>
@@ -536,11 +572,17 @@ export function AdminPanel() {
                   <AdminField label="체크리스트">
                     <StringListEditor
                       items={step.items}
-                      onChange={(items) => {
-                        const steps = [...draft.process.steps];
-                        steps[i] = { ...step, items };
-                        setDraftRoot({ ...draft, process: { ...draft.process, steps } });
-                      }}
+                      onChange={(items) =>
+                        setDraftRoot((prev) => ({
+                          ...prev,
+                          process: {
+                            ...prev.process,
+                            steps: prev.process.steps.map((s, idx) =>
+                              idx === i ? { ...s, items } : s
+                            ),
+                          },
+                        }))
+                      }
                     />
                   </AdminField>
                 </div>
