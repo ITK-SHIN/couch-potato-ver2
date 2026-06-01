@@ -1,4 +1,5 @@
 import { defaultSiteContent } from "../data/defaultSiteContent";
+import { saveContentRevision } from "./contentRevisions";
 import { mergeSiteContent } from "./mergeContent";
 import {
   isSupabaseConfigured,
@@ -45,6 +46,7 @@ export async function saveSiteContent(content: SiteContent): Promise<void> {
     });
 
     if (error) throw new Error(error.message);
+    await saveContentRevision(content);
   }
 }
 

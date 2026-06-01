@@ -143,7 +143,7 @@ function contactApiDevMiddleware(
           req.headers,
           req.socket.remoteAddress
         );
-        assertContactRateLimit(clientIp, {
+        await assertContactRateLimit(clientIp, {
           CONTACT_RATE_LIMIT_MAX: env.CONTACT_RATE_LIMIT_MAX,
           CONTACT_RATE_LIMIT_WINDOW_MIN: env.CONTACT_RATE_LIMIT_WINDOW_MIN,
           CONTACT_RATE_LIMIT_COOLDOWN_SEC: env.CONTACT_RATE_LIMIT_COOLDOWN_SEC,

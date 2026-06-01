@@ -7,6 +7,8 @@ export type ContactFormPayload = {
   phone?: string;
   service?: string;
   message: string;
+  /** honeypot — 값이 있으면 봇으로 간주 */
+  website?: string;
 };
 
 export type ContactEmailEnv = {
@@ -31,6 +33,10 @@ export async function handleContactSubmission(
   payload: ContactFormPayload,
   env: ContactEmailEnv
 ): Promise<void> {
+  if (payload.website?.trim()) {
+    return;
+  }
+
   const apiKey = env.RESEND_API_KEY;
   if (!apiKey) {
     throw new Error(
@@ -91,4 +97,7 @@ export async function handleContactSubmission(
     }
     throw new Error(msg);
   }
+
+  const { saveInquiryRecord } = await import("./saveInquiry");
+  await saveInquiryRecord(payload);
 }

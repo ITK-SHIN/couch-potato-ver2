@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import type { SiteContent } from "../types/siteContent";
 import { allowSearchIndexing, getSiteUrl } from "../lib/siteConfig";
+import { getGaMeasurementId, injectGa4 } from "../lib/analytics";
 import { resolveSeoMeta } from "../lib/siteSeo";
 
 function upsertMeta(
@@ -63,6 +64,9 @@ export function SiteSeo({ content }: { content: SiteContent }) {
     if (meta.ogImage) upsertMeta("name", "twitter:image", meta.ogImage);
 
     if (canonical) upsertLink("canonical", canonical);
+
+    const gaId = getGaMeasurementId();
+    if (gaId) injectGa4(gaId);
   }, [content]);
 
   return null;

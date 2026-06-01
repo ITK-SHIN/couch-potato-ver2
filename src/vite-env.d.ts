@@ -8,6 +8,7 @@ interface ImportMetaEnv {
   readonly VITE_SITE_URL?: string;
   /** false·0·no 이면 noindex (스테이징). 미설정 시 검색 허용 */
   readonly VITE_ALLOW_INDEXING?: string;
+  readonly VITE_GA_MEASUREMENT_ID?: string;
 }
 
 interface ImportMeta {

@@ -14,9 +14,13 @@ export function HeroSection() {
       id="home"
       className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden"
     >
-      <div
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${hero.backgroundImage})` }}
+      <img
+        src={hero.backgroundImage}
+        alt=""
+        fetchPriority="high"
+        loading="eager"
+        className="absolute inset-0 w-full h-full object-cover object-center"
+        aria-hidden
       />
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-background" />
 

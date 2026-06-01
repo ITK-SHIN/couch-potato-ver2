@@ -7,6 +7,7 @@ import {
   CheckCircle,
 } from "lucide-react";
 import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
+import { trackEvent } from "../../lib/analytics";
 import { sendContactEmail } from "../../lib/sendContactEmail";
 
 const emptyForm = {
@@ -16,6 +17,7 @@ const emptyForm = {
   phone: "",
   service: "",
   message: "",
+  website: "",
 };
 
 export function ContactSection() {
@@ -39,7 +41,9 @@ export function ContactSection() {
         phone: form.phone.trim() || undefined,
         service: form.service || undefined,
         message: form.message.trim(),
+        website: form.website,
       });
+      trackEvent("contact_submit", { method: "form" });
       setSubmitted(true);
       setForm(emptyForm);
     } catch (err) {
@@ -169,6 +173,16 @@ export function ContactSection() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
+                <input
+                  type="text"
+                  name="website"
+                  value={form.website}
+                  onChange={(e) => setForm({ ...form, website: e.target.value })}
+                  tabIndex={-1}
+                  autoComplete="off"
+                  aria-hidden
+                  className="absolute opacity-0 pointer-events-none h-0 w-0 overflow-hidden"
+                />
                 <div className="grid sm:grid-cols-2 gap-5">
                   <div>
                     <label className="block text-muted-foreground text-xs mb-2 tracking-wider">

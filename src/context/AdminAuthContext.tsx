@@ -7,6 +7,10 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import {
+  canUseLocalPasswordAuth,
+  isProductionWithoutSupabase,
+} from "../lib/adminAuthPolicy";
 import { isSupabaseConfigured, supabase } from "../lib/supabase";
 
 const SESSION_KEY = "couchpotato-admin-session";
@@ -15,6 +19,8 @@ interface AdminAuthContextValue {
   isAuthenticated: boolean;
   loading: boolean;
   useSupabaseAuth: boolean;
+  /** 프로덕션인데 Supabase 미연결 — 로그인 불가 */
+  authBlocked: boolean;
   loginWithPassword: (password: string) => Promise<boolean>;
   loginWithEmail: (email: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
@@ -30,9 +36,15 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
   const useSupabaseAuth = isSupabaseConfigured;
+  const authBlocked = isProductionWithoutSupabase();
 
   useEffect(() => {
     const init = async () => {
+      if (authBlocked) {
+        setIsAuthenticated(false);
+        setLoading(false);
+        return;
+      }
       if (useSupabaseAuth && supabase) {
         const { data } = await supabase.auth.getSession();
         setIsAuthenticated(!!data.session);
@@ -49,20 +61,26 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       });
       return () => sub.subscription.unsubscribe();
     }
-  }, [useSupabaseAuth]);
+  }, [useSupabaseAuth, authBlocked]);
 
-  const loginWithPassword = useCallback(async (password: string) => {
-    if (useSupabaseAuth) return false;
-    if (password === envPassword) {
-      sessionStorage.setItem(SESSION_KEY, "1");
-      setIsAuthenticated(true);
-      return true;
-    }
-    return false;
-  }, [useSupabaseAuth]);
+  const loginWithPassword = useCallback(
+    async (password: string) => {
+      if (authBlocked || !canUseLocalPasswordAuth()) return false;
+      if (password === envPassword) {
+        sessionStorage.setItem(SESSION_KEY, "1");
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    },
+    [authBlocked]
+  );
 
   const loginWithEmail = useCallback(
     async (email: string, password: string) => {
+      if (authBlocked) {
+        return "프로덕션 환경에서는 Supabase 연결이 필요합니다.";
+      }
       if (!supabase) return "Supabase가 설정되지 않았습니다.";
       const { error } = await supabase.auth.signInWithPassword({
         email,
@@ -72,7 +90,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       setIsAuthenticated(true);
       return null;
     },
-    []
+    [authBlocked]
   );
 
   const logout = useCallback(async () => {
@@ -86,6 +104,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       loading,
       useSupabaseAuth,
+      authBlocked,
       loginWithPassword,
       loginWithEmail,
       logout,
@@ -94,6 +113,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       isAuthenticated,
       loading,
       useSupabaseAuth,
+      authBlocked,
       loginWithPassword,
       loginWithEmail,
       logout,

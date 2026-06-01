@@ -328,13 +328,11 @@ export function presetForImageUploadFit(
 
 export function processStepImagePreset(
   imageFit?: ImageUploadFit
-): "process" | "processFull" {
+): AdminImagePreset {
   return presetForImageUploadFit(imageFit, "process", "processFull");
 }
 
-export function aboutImagePreset(
-  imageFit?: ImageUploadFit
-): "aboutCover" | "aboutFull" {
+export function aboutImagePreset(imageFit?: ImageUploadFit): AdminImagePreset {
   return presetForImageUploadFit(imageFit, "aboutCover", "aboutFull");
 }
 

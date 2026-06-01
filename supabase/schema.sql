@@ -60,3 +60,51 @@ create policy "Authenticated update media"
     bucket_id = 'media'
     and auth.role() = 'authenticated'
   );
+
+drop policy if exists "Authenticated delete media" on storage.objects;
+create policy "Authenticated delete media"
+  on storage.objects for delete
+  using (
+    bucket_id = 'media'
+    and auth.role() = 'authenticated'
+  );
+
+-- 3) CMS 버전 히스토리
+create table if not exists public.site_content_revisions (
+  id uuid primary key default gen_random_uuid(),
+  content jsonb not null,
+  label text,
+  created_at timestamptz default now()
+);
+
+alter table public.site_content_revisions enable row level security;
+
+drop policy if exists "Authenticated read revisions" on public.site_content_revisions;
+drop policy if exists "Authenticated insert revisions" on public.site_content_revisions;
+
+create policy "Authenticated read revisions"
+  on public.site_content_revisions for select
+  using (auth.role() = 'authenticated');
+
+create policy "Authenticated insert revisions"
+  on public.site_content_revisions for insert
+  with check (auth.role() = 'authenticated');
+
+-- 4) 문의 rate limit (API service_role 전용, RLS 기본 거부)
+create table if not exists public.contact_rate_limits (
+  ip_hash text primary key,
+  count int not null default 0,
+  window_ends_at timestamptz not null,
+  last_request_at timestamptz not null default now()
+);
+
+alter table public.contact_rate_limits enable row level security;
+
+-- 5) 문의 보관 (API service_role insert)
+create table if not exists public.inquiries (
+  id uuid primary key default gen_random_uuid(),
+  payload jsonb not null,
+  created_at timestamptz default now()
+);
+
+alter table public.inquiries enable row level security;

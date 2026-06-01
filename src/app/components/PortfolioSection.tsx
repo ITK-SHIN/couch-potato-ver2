@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "react-router";
 import {
   ChevronLeft,
   ChevronRight,
@@ -19,6 +20,20 @@ const PAGE_SIZE = 8;
 export function PortfolioSection() {
   const content = useSiteContentDisplay();
   const { title, subtitle, categories, items, bottomButton } = content.portfolio;
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const readCategory = useCallback(() => {
+    const cat = searchParams.get("category");
+    if (!cat) return "전체";
+    if (cat === "전체" || categories.includes(cat)) return cat;
+    return "전체";
+  }, [searchParams, categories]);
+
+  const readPage = useCallback(() => {
+    const p = Number.parseInt(searchParams.get("page") ?? "1", 10);
+    return Number.isFinite(p) && p > 0 ? p : 1;
+  }, [searchParams]);
+
   const [activeCategory, setActiveCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);
   const [hovered, setHovered] = useState<string | null>(null);
@@ -39,19 +54,41 @@ export function PortfolioSection() {
     return filtered.slice(start, start + PAGE_SIZE);
   }, [filtered, currentPage]);
 
+  const syncUrl = useCallback(
+    (category: string, page: number) => {
+      const next = new URLSearchParams();
+      if (category !== "전체") next.set("category", category);
+      if (page > 1) next.set("page", String(page));
+      setSearchParams(next, { replace: true });
+    },
+    [setSearchParams]
+  );
+
   useEffect(() => {
-    setCurrentPage(1);
-  }, [activeCategory]);
+    const cat = readCategory();
+    const page = readPage();
+    setActiveCategory(cat);
+    setCurrentPage(page);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- URL → state on external navigation
+  }, [searchParams]);
 
   useEffect(() => {
     if (currentPage > totalPages) {
       setCurrentPage(totalPages);
+      syncUrl(activeCategory, totalPages);
     }
-  }, [currentPage, totalPages]);
+  }, [currentPage, totalPages, activeCategory, syncUrl]);
+
+  const selectCategory = (cat: string) => {
+    setActiveCategory(cat);
+    setCurrentPage(1);
+    syncUrl(cat, 1);
+  };
 
   const goToPage = (page: number) => {
     const next = Math.min(Math.max(1, page), totalPages);
     setCurrentPage(next);
+    syncUrl(activeCategory, next);
     document.getElementById("portfolio-grid")?.scrollIntoView({
       behavior: "smooth",
       block: "nearest",
@@ -93,7 +130,7 @@ export function PortfolioSection() {
               <button
                 key={cat}
                 type="button"
-                onClick={() => setActiveCategory(cat)}
+                onClick={() => selectCategory(cat)}
                 className={`px-4 py-1.5 text-xs transition-all duration-200 ${
                   activeCategory === cat
                     ? "bg-primary text-primary-foreground"
@@ -137,6 +174,8 @@ export function PortfolioSection() {
                 <img
                   src={thumb}
                   alt={item.title}
+                  loading="lazy"
+                  decoding="async"
                   className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
                 />
                 <div

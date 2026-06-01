@@ -7,7 +7,20 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { useSiteContent } from "../context/SiteContentContext";
 import { isSiteContentDirty } from "../lib/isSiteContentDirty";
 import { serviceIconOptions } from "../lib/serviceIcons";
-import type { SiteContent, SiteSectionKey, SiteSeoFields } from "../types/siteContent";
+import type { SiteContent, SiteSectionKey } from "../types/siteContent";
+import {
+  appendPortfolioItems,
+  patchAbout,
+  patchContact,
+  patchFooter,
+  patchHero,
+  patchPortfolio,
+  patchProcess,
+  patchSeo,
+  patchServices,
+  patchServicesCta,
+} from "./patchDraft";
+import { clearAutosavedDraft, useDraftAutosave } from "./useDraftAutosave";
 import {
   AdminField,
   AdminInput,
@@ -20,6 +33,7 @@ import { PortfolioCategoriesEditor } from "./components/PortfolioCategoriesEdito
 import { PortfolioItemAddDialog } from "./components/PortfolioItemAddDialog";
 import { PortfolioItemsEditor } from "./components/PortfolioItemsEditor";
 import { PortfolioYoutubeBulkImport } from "./components/PortfolioYoutubeBulkImport";
+import { ContentRevisionsPanel } from "./components/ContentRevisionsPanel";
 
 const SECTIONS: { key: SiteSectionKey; label: string }[] = [
   { key: "hero", label: "히어로" },
@@ -36,13 +50,6 @@ function newId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
-function patchSeo(
-  prev: SiteContent,
-  patch: Partial<SiteSeoFields>
-): SiteContent {
-  return { ...prev, seo: { ...prev.seo, ...patch } };
-}
-
 export function AdminPanel() {
   const { content: published, save, saving } = useSiteContent();
   const { logout } = useAdminAuth();
@@ -56,6 +63,8 @@ export function AdminPanel() {
     () => isSiteContentDirty(published, draft),
     [published, draft]
   );
+
+  useDraftAutosave(draft, hasUnsavedChanges);
 
   useEffect(() => {
     setDraft(published);
@@ -77,6 +86,7 @@ export function AdminPanel() {
   const handleSave = async () => {
     try {
       await save(draft);
+      clearAutosavedDraft();
       toast.success("저장되었습니다. 공개 사이트에 반영되었습니다.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "저장 실패");
@@ -118,6 +128,7 @@ export function AdminPanel() {
           </Link>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
+          <ContentRevisionsPanel onRestore={(content) => setDraftRoot(content)} />
           {hasUnsavedChanges && (
             <span className="text-xs text-amber-600 dark:text-amber-400 mr-1">
               미저장 변경
@@ -183,7 +194,7 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.hero.badge}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, hero: { ...draft.hero, badge: e.target.value } })
+                    setDraftRoot((prev) => patchHero(prev, { badge: e.target.value }))
                   }
                 />
               </AdminField>
@@ -191,7 +202,7 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.hero.title}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, hero: { ...draft.hero, title: e.target.value } })
+                    setDraftRoot((prev) => patchHero(prev, { title: e.target.value }))
                   }
                 />
               </AdminField>
@@ -199,7 +210,7 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.hero.subtitle}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, hero: { ...draft.hero, subtitle: e.target.value } })
+                    setDraftRoot((prev) => patchHero(prev, { subtitle: e.target.value }))
                   }
                 />
               </AdminField>
@@ -207,7 +218,9 @@ export function AdminPanel() {
                 <AdminTextarea
                   value={draft.hero.description}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, hero: { ...draft.hero, description: e.target.value } })
+                    setDraftRoot((prev) =>
+                      patchHero(prev, { description: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -217,10 +230,9 @@ export function AdminPanel() {
                 hint="히어로 배경은 항상 화면에 맞게 자르기(꽉 차게)로 업로드됩니다."
                 value={draft.hero.backgroundImage}
                 onChange={(next) =>
-                  setDraftRoot({
-                    ...draft,
-                    hero: { ...draft.hero, backgroundImage: next.image },
-                  })
+                  setDraftRoot((prev) =>
+                    patchHero(prev, { backgroundImage: next.image })
+                  )
                 }
               />
               <div className="grid sm:grid-cols-2 gap-4">
@@ -228,7 +240,9 @@ export function AdminPanel() {
                   <AdminInput
                     value={draft.hero.primaryButton}
                     onChange={(e) =>
-                      setDraftRoot({ ...draft, hero: { ...draft.hero, primaryButton: e.target.value } })
+                      setDraftRoot((prev) =>
+                        patchHero(prev, { primaryButton: e.target.value })
+                      )
                     }
                   />
                 </AdminField>
@@ -236,10 +250,9 @@ export function AdminPanel() {
                   <AdminInput
                     value={draft.hero.secondaryButton}
                     onChange={(e) =>
-                      setDraftRoot({
-                        ...draft,
-                        hero: { ...draft.hero, secondaryButton: e.target.value },
-                      })
+                      setDraftRoot((prev) =>
+                        patchHero(prev, { secondaryButton: e.target.value })
+                      )
                     }
                   />
                 </AdminField>
@@ -371,7 +384,7 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.about.heading}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, heading: e.target.value } })
+                    setDraftRoot((prev) => patchAbout(prev, { heading: e.target.value }))
                   }
                 />
               </AdminField>
@@ -379,7 +392,7 @@ export function AdminPanel() {
                 <AdminTextarea
                   value={draft.about.intro}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, intro: e.target.value } })
+                    setDraftRoot((prev) => patchAbout(prev, { intro: e.target.value }))
                   }
                 />
               </AdminField>
@@ -387,10 +400,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.about.philosophyTitle}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      about: { ...draft.about, philosophyTitle: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchAbout(prev, { philosophyTitle: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -398,7 +410,9 @@ export function AdminPanel() {
                 <AdminTextarea
                   value={draft.about.philosophy1}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, philosophy1: e.target.value } })
+                    setDraftRoot((prev) =>
+                      patchAbout(prev, { philosophy1: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -406,7 +420,9 @@ export function AdminPanel() {
                 <AdminTextarea
                   value={draft.about.philosophy2}
                   onChange={(e) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, philosophy2: e.target.value } })
+                    setDraftRoot((prev) =>
+                      patchAbout(prev, { philosophy2: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -434,7 +450,7 @@ export function AdminPanel() {
                 <StringListEditor
                   items={draft.about.strengths}
                   onChange={(strengths) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, strengths } })
+                    setDraftRoot((prev) => patchAbout(prev, { strengths }))
                   }
                 />
               </AdminField>
@@ -442,7 +458,7 @@ export function AdminPanel() {
                 <StringListEditor
                   items={draft.about.fields}
                   onChange={(fields) =>
-                    setDraftRoot({ ...draft, about: { ...draft.about, fields } })
+                    setDraftRoot((prev) => patchAbout(prev, { fields }))
                   }
                 />
               </AdminField>
@@ -456,10 +472,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.services.title}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      services: { ...draft.services, title: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchServices(prev, { title: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -467,10 +482,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.services.subtitle}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      services: { ...draft.services, subtitle: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchServices(prev, { subtitle: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -562,13 +576,9 @@ export function AdminPanel() {
                   <AdminInput
                     value={draft.services.cta.badge}
                     onChange={(e) =>
-                      setDraftRoot({
-                        ...draft,
-                        services: {
-                          ...draft.services,
-                          cta: { ...draft.services.cta, badge: e.target.value },
-                        },
-                      })
+                      setDraftRoot((prev) =>
+                        patchServicesCta(prev, { badge: e.target.value })
+                      )
                     }
                   />
                 </AdminField>
@@ -576,13 +586,9 @@ export function AdminPanel() {
                   <AdminInput
                     value={draft.services.cta.title}
                     onChange={(e) =>
-                      setDraftRoot({
-                        ...draft,
-                        services: {
-                          ...draft.services,
-                          cta: { ...draft.services.cta, title: e.target.value },
-                        },
-                      })
+                      setDraftRoot((prev) =>
+                        patchServicesCta(prev, { title: e.target.value })
+                      )
                     }
                   />
                 </AdminField>
@@ -590,13 +596,9 @@ export function AdminPanel() {
                   <AdminInput
                     value={draft.services.cta.desc}
                     onChange={(e) =>
-                      setDraftRoot({
-                        ...draft,
-                        services: {
-                          ...draft.services,
-                          cta: { ...draft.services.cta, desc: e.target.value },
-                        },
-                      })
+                      setDraftRoot((prev) =>
+                        patchServicesCta(prev, { desc: e.target.value })
+                      )
                     }
                   />
                 </AdminField>
@@ -611,10 +613,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.process.title}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      process: { ...draft.process, title: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchProcess(prev, { title: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -622,10 +623,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.process.subtitle}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      process: { ...draft.process, subtitle: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchProcess(prev, { subtitle: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -689,10 +689,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.portfolio.title}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      portfolio: { ...draft.portfolio, title: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchPortfolio(prev, { title: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -700,23 +699,14 @@ export function AdminPanel() {
                 categories={draft.portfolio.categories}
                 items={draft.portfolio.items}
                 onChange={(categories, items) =>
-                  setDraftRoot({
-                    ...draft,
-                    portfolio: { ...draft.portfolio, categories, items },
-                  })
+                  setDraftRoot((prev) => patchPortfolio(prev, { categories, items }))
                 }
               />
               <PortfolioYoutubeBulkImport
                 categories={draft.portfolio.categories}
                 items={draft.portfolio.items}
                 onAddItems={(newItems) =>
-                  setDraftRoot({
-                    ...draft,
-                    portfolio: {
-                      ...draft.portfolio,
-                      items: [...draft.portfolio.items, ...newItems],
-                    },
-                  })
+                  setDraftRoot((prev) => appendPortfolioItems(prev, newItems))
                 }
               />
               <button
@@ -732,23 +722,18 @@ export function AdminPanel() {
                 onOpenChange={setPortfolioAddOpen}
                 categories={draft.portfolio.categories}
                 onConfirm={(item) =>
-                  setDraftRoot({
-                    ...draft,
-                    portfolio: {
-                      ...draft.portfolio,
-                      items: [{ ...item, id: newId() }, ...draft.portfolio.items],
-                    },
-                  })
+                  setDraftRoot((prev) =>
+                    patchPortfolio(prev, {
+                      items: [{ ...item, id: newId() }, ...prev.portfolio.items],
+                    })
+                  )
                 }
               />
               <PortfolioItemsEditor
                 items={draft.portfolio.items}
                 categories={draft.portfolio.categories}
                 onItemsChange={(items) =>
-                  setDraftRoot({
-                    ...draft,
-                    portfolio: { ...draft.portfolio, items },
-                  })
+                  setDraftRoot((prev) => patchPortfolio(prev, { items }))
                 }
               />
             </div>
@@ -761,10 +746,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.contact.title}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      contact: { ...draft.contact, title: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchContact(prev, { title: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -772,10 +756,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.contact.email}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      contact: { ...draft.contact, email: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchContact(prev, { email: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -783,10 +766,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.contact.phone}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      contact: { ...draft.contact, phone: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchContact(prev, { phone: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -794,10 +776,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.contact.instagram}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      contact: { ...draft.contact, instagram: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchContact(prev, { instagram: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -805,10 +786,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.contact.kakao}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      contact: { ...draft.contact, kakao: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchContact(prev, { kakao: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -816,7 +796,7 @@ export function AdminPanel() {
                 <StringListEditor
                   items={draft.contact.formServices}
                   onChange={(formServices) =>
-                    setDraftRoot({ ...draft, contact: { ...draft.contact, formServices } })
+                    setDraftRoot((prev) => patchContact(prev, { formServices }))
                   }
                 />
               </AdminField>
@@ -830,10 +810,9 @@ export function AdminPanel() {
                 <AdminTextarea
                   value={draft.footer.tagline.replace(/\\n/g, "\n")}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      footer: { ...draft.footer, tagline: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchFooter(prev, { tagline: e.target.value })
+                    )
                   }
                   rows={3}
                 />
@@ -842,10 +821,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.footer.email}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      footer: { ...draft.footer, email: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchFooter(prev, { email: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -853,10 +831,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.footer.phone}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      footer: { ...draft.footer, phone: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchFooter(prev, { phone: e.target.value })
+                    )
                   }
                 />
               </AdminField>
@@ -864,10 +841,9 @@ export function AdminPanel() {
                 <AdminInput
                   value={draft.footer.copyright}
                   onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      footer: { ...draft.footer, copyright: e.target.value },
-                    })
+                    setDraftRoot((prev) =>
+                      patchFooter(prev, { copyright: e.target.value })
+                    )
                   }
                 />
               </AdminField>

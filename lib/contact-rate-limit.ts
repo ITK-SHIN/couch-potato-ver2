@@ -41,7 +41,7 @@ function parsePositiveInt(value: string | undefined, fallback: number): number {
   return Number.isFinite(n) && n > 0 ? n : fallback;
 }
 
-function getLimits(env: ContactRateLimitEnv) {
+export function getLimits(env: ContactRateLimitEnv) {
   return {
     max: parsePositiveInt(env.CONTACT_RATE_LIMIT_MAX, DEFAULT_MAX),
     windowMs:
@@ -101,7 +101,8 @@ function extractIp(headers: Record<string, string | null>): string {
   return "unknown";
 }
 
-export function assertContactRateLimit(
+/** 메모리 기반 (서비스 롤 미설정 시 폴백) */
+export function assertContactRateLimitMemory(
   ip: string,
   env: ContactRateLimitEnv = process.env as ContactRateLimitEnv
 ): void {
@@ -146,4 +147,27 @@ export function assertContactRateLimit(
   entry.count += 1;
   entry.lastRequestAt = now;
   store.set(clientIp, entry);
+}
+
+/** Supabase 영속 rate limit (서비스 롤 있을 때), 없으면 메모리 */
+export async function assertContactRateLimit(
+  ip: string,
+  env: ContactRateLimitEnv = process.env as ContactRateLimitEnv
+): Promise<void> {
+  if (process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()) {
+    const { getSupabaseServiceClient } = await import("./supabaseServer");
+    const { assertContactRateLimitPersist } = await import(
+      "./contact-rate-limit-persist"
+    );
+    if (getSupabaseServiceClient()) {
+      try {
+        await assertContactRateLimitPersist(ip, env);
+        return;
+      } catch (e) {
+        if (e instanceof ContactRateLimitError) throw e;
+        console.warn("[rate-limit] persist failed, using memory fallback");
+      }
+    }
+  }
+  assertContactRateLimitMemory(ip, env);
 }

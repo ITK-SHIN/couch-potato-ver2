@@ -8,6 +8,8 @@ type Props = {
   aspectRatio?: string;
   className?: string;
   imgClassName?: string;
+  loading?: "lazy" | "eager";
+  fetchPriority?: "high" | "low" | "auto";
 };
 
 /** 고정 비율 영역 안에서 cover(자르기·꽉 차게) / contain(전체 표시) */
@@ -18,6 +20,8 @@ export function FittedImage({
   aspectRatio = "4/3",
   className = "",
   imgClassName = "",
+  loading = "lazy",
+  fetchPriority,
 }: Props) {
   return (
     <div
@@ -29,6 +33,8 @@ export function FittedImage({
       <img
         src={src}
         alt={alt}
+        loading={loading}
+        {...(fetchPriority ? { fetchPriority } : {})}
         className={`absolute inset-0 w-full h-full object-center transition-all duration-300 ${
           fit === "contain" ? "object-contain" : "object-cover"
         } ${imgClassName}`}

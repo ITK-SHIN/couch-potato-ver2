@@ -24,7 +24,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   try {
-    assertContactRateLimit(getClientIpFromRequest(request), process.env);
+    await assertContactRateLimit(getClientIpFromRequest(request), process.env);
 
     let body: ContactFormPayload;
     try {
