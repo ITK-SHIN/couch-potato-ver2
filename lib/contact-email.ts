@@ -17,6 +17,8 @@ export type ContactEmailEnv = {
 
 const DEFAULT_TO = "bano112@naver.com";
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 function escapeHtml(text: string): string {
   return text
     .replace(/&/g, "&amp;")
@@ -38,6 +40,11 @@ export async function handleContactSubmission(
 
   if (!payload.name?.trim() || !payload.email?.trim() || !payload.message?.trim()) {
     throw new Error("필수 항목을 모두 입력해 주세요.");
+  }
+
+  const email = payload.email.trim();
+  if (!EMAIL_REGEX.test(email)) {
+    throw new Error("올바른 이메일 주소를 입력해 주세요. (예: name@example.com)");
   }
 
   const to = env.CONTACT_TO_EMAIL?.trim() || DEFAULT_TO;
@@ -65,12 +72,23 @@ export async function handleContactSubmission(
   const { error } = await resend.emails.send({
     from,
     to: [to],
-    replyTo: payload.email,
+    replyTo: email,
     subject,
     html,
   });
 
   if (error) {
-    throw new Error(error.message || "이메일 전송에 실패했습니다.");
+    const msg = error.message || "이메일 전송에 실패했습니다.";
+    const lower = msg.toLowerCase();
+    if (
+      lower.includes("only send") ||
+      lower.includes("verify a domain") ||
+      lower.includes("testing emails")
+    ) {
+      throw new Error(
+        "Resend 테스트 발신 주소로는 가입 이메일로만 보낼 수 있습니다. Resend에서 도메인을 인증한 뒤 CONTACT_FROM_EMAIL을 해당 도메인 주소로 바꿔 주세요. (CONTACT_EMAIL.md 참고)"
+      );
+    }
+    throw new Error(msg);
   }
 }

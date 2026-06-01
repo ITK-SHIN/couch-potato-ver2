@@ -26,7 +26,16 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     assertContactRateLimit(getClientIpFromRequest(request), process.env);
 
-    const body = (await request.json()) as ContactFormPayload;
+    let body: ContactFormPayload;
+    try {
+      body = (await request.json()) as ContactFormPayload;
+    } catch {
+      return Response.json(
+        { error: "요청 형식이 올바르지 않습니다." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
     await handleContactSubmission(body, process.env);
     return Response.json({ ok: true }, { headers: corsHeaders });
   } catch (err) {
@@ -45,6 +54,15 @@ export default async function handler(request: Request): Promise<Response> {
 
     const message =
       err instanceof Error ? err.message : "이메일 전송에 실패했습니다.";
-    return Response.json({ error: message }, { status: 500, headers: corsHeaders });
+
+    const isClientError =
+      message.includes("입력") ||
+      message.includes("필수") ||
+      message.includes("이메일 주소");
+
+    return Response.json(
+      { error: message },
+      { status: isClientError ? 400 : 500, headers: corsHeaders }
+    );
   }
 }

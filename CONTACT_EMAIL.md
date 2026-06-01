@@ -44,11 +44,21 @@ CONTACT_FROM_EMAIL=COUCHPOTATO <onboarding@resend.dev>
 초과 시 HTTP **429** 와 함께 “잠시 후 다시 시도” 메시지가 표시됩니다.  
 Vercel 서버리스는 인스턴스별 메모리를 쓰므로, 아주 강한 봇 차단까지는 Vercel Firewall·Upstash 등 추가가 필요할 수 있습니다. 일반적인 연속 클릭·스크립트 남용에는 충분합니다.
 
-## 5. 발신 주소 (도메인) 안내
+## 5. 발신 주소 (도메인) — **bano112@naver.com 으로내려면 필수**
 
-- 처음에는 `onboarding@resend.dev` 로 테스트 가능 (Resend 무료 플랜 제한 있음)
-- 실제 운영 시 [Resend Domains](https://resend.com/domains) 에서 도메인 인증 후  
-  `CONTACT_FROM_EMAIL=COUCHPOTATO <noreply@yourdomain.com>` 로 변경 권장
+`onboarding@resend.dev` 는 **Resend 가입 이메일로만** 테스트 발송됩니다.  
+**다른 주소(네이버 등)로내면 403/500 오류**가 납니다.
+
+운영 절차:
+
+1. [Resend Domains](https://resend.com/domains) 에서 사이트 도메인(또는 서브도메인) DNS 인증
+2. Vercel 환경 변수 수정:
+   ```env
+   CONTACT_FROM_EMAIL=COUCHPOTATO <noreply@yourdomain.com>
+   ```
+3. **Redeploy**
+
+도메인이 없으면 Resend 대시보드에서 **Receiving**용 `*.resend.app` 주소로 받는 방법도 있으나, 일반적으로 **본인 도메인 인증**이 가장 확실합니다.
 
 ## 문제 해결
 
@@ -59,3 +69,6 @@ Vercel 서버리스는 인스턴스별 메모리를 쓰므로, 아주 강한 봇
 | 배포에서만 실패 | Vercel env + Redeploy |
 | Resend 도메인 오류 | `CONTACT_FROM_EMAIL` 을 인증된 도메인으로 변경 |
 | “요청이 너무 빠릅니다” / 횟수 제한 | 정상 동작(429). 1분 후 재시도 |
+| 배포 사이트 500, 로컬은 됨 | Vercel에 `RESEND_API_KEY` 없음 → env 추가 후 Redeploy |
+| 도메인/테스트 발신 오류 | `onboarding@resend.dev` → **도메인 인증 후** 발신 주소 변경 |
+| 이메일 형식 오류 | `name@example.com` 형식으로 입력 (`.com` 등 도메인 필요) |
