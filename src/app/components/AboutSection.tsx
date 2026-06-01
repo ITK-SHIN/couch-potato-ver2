@@ -1,8 +1,13 @@
+import { FittedImage } from "../../components/FittedImage";
 import { useSiteContent } from "../../context/SiteContentContext";
+import { resolveDisplayImage } from "../../lib/displayImage";
+import type { ImageUploadFit } from "../../types/siteContent";
 
 export function AboutSection() {
   const { content } = useSiteContent();
   const about = content.about;
+  const imageFit: ImageUploadFit = about.imageFit ?? "contain";
+  const displaySrc = resolveDisplayImage(about.image, about.imageOriginal, imageFit);
 
   return (
     <section id="about" className="py-32 px-6">
@@ -40,13 +45,15 @@ export function AboutSection() {
         </div>
 
         <div className="grid md:grid-cols-5 gap-8 mb-24">
-          <div className="md:col-span-3 relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
-            <img
-              src={about.image}
+          <div className="md:col-span-3 relative">
+            <FittedImage
+              key={`${displaySrc}-${imageFit}`}
+              src={displaySrc}
               alt="편집 스튜디오"
-              className="w-full h-full object-contain object-center bg-muted"
+              fit={imageFit}
+              aspectRatio="16/9"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
           </div>
           <div className="md:col-span-2 flex flex-col justify-between py-4">
             <div>

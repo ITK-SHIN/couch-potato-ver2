@@ -224,7 +224,7 @@ export function PortfolioItemFormFields({
           : undefined
       }
       value={item.image}
-      onChange={(url) => patch({ image: url })}
+      onChange={(next) => patch({ image: next.image })}
     />
   );
 

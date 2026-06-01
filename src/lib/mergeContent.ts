@@ -1,5 +1,12 @@
 import { defaultSiteContent } from "../data/defaultSiteContent";
-import type { PortfolioItem, SiteContent } from "../types/siteContent";
+import type { PortfolioItem, ProcessStep, SiteContent } from "../types/siteContent";
+
+function normalizeProcessStep(step: ProcessStep): ProcessStep {
+  return {
+    ...step,
+    imageFit: step.imageFit ?? "cover",
+  };
+}
 
 function normalizePortfolioItem(item: PortfolioItem): PortfolioItem {
   return {
@@ -15,7 +22,11 @@ export function mergeSiteContent(partial: Partial<SiteContent> | null): SiteCont
   return {
     hero: { ...defaultSiteContent.hero, ...partial.hero },
     highlights: partial.highlights ?? defaultSiteContent.highlights,
-    about: { ...defaultSiteContent.about, ...partial.about },
+    about: {
+      ...defaultSiteContent.about,
+      ...partial.about,
+      imageFit: partial.about?.imageFit ?? "contain",
+    },
     services: {
       ...defaultSiteContent.services,
       ...partial.services,
@@ -28,7 +39,9 @@ export function mergeSiteContent(partial: Partial<SiteContent> | null): SiteCont
     process: {
       ...defaultSiteContent.process,
       ...partial.process,
-      steps: partial.process?.steps ?? defaultSiteContent.process.steps,
+      steps: (partial.process?.steps ?? defaultSiteContent.process.steps).map(
+        normalizeProcessStep
+      ),
     },
     portfolio: {
       ...defaultSiteContent.portfolio,

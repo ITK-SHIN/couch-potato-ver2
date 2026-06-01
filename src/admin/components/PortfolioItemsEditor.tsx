@@ -436,8 +436,8 @@ function PortfolioItemsEditorInner({ items, categories, onItemsChange }: EditorP
                   label="썸네일"
                   preset="portfolio"
                   value={item.image}
-                  onChange={(url) =>
-                    onItemsChange(updateItemAt(items, i, { image: url }))
+                  onChange={(next) =>
+                    onItemsChange(updateItemAt(items, i, { image: next.image }))
                   }
                 />
               </SortablePortfolioCard>

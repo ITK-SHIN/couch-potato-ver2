@@ -1,8 +1,13 @@
+import type { ImageUploadFit } from "../types/siteContent";
+
 export type AdminImagePreset =
   | "hero"
   | "highlight"
   | "about"
+  | "aboutFull"
+  | "aboutCover"
   | "process"
+  | "processFull"
   | "portfolio"
   | "default";
 
@@ -41,7 +46,7 @@ export const ADMIN_IMAGE_PRESETS: Record<AdminImagePreset, PresetConfig> = {
     letterboxColor: "#141414",
   },
   about: {
-    label: "소개 이미지 (16:9)",
+    label: "소개 · 전체 표시 (16:9)",
     aspectRatio: 16 / 9,
     maxWidth: 1920,
     maxHeight: 1080,
@@ -50,9 +55,39 @@ export const ADMIN_IMAGE_PRESETS: Record<AdminImagePreset, PresetConfig> = {
     fit: "contain",
     letterboxColor: "#141414",
   },
+  aboutFull: {
+    label: "소개 · 전체 표시",
+    aspectRatio: 0,
+    maxWidth: 1920,
+    maxHeight: 1080,
+    quality: 0.9,
+    mime: "image/png",
+    fit: "contain",
+    letterboxColor: "#141414",
+  },
+  aboutCover: {
+    label: "소개 · 자르기 꽉 차게 (16:9)",
+    aspectRatio: 16 / 9,
+    maxWidth: 1920,
+    maxHeight: 1080,
+    quality: 0.88,
+    mime: "image/jpeg",
+    fit: "cover",
+    letterboxColor: "#141414",
+  },
   process: {
-    label: "제작 과정 (4:3)",
+    label: "제작 과정 · 꽉 차게 (4:3)",
     aspectRatio: 4 / 3,
+    maxWidth: 1600,
+    maxHeight: 1200,
+    quality: 0.88,
+    mime: "image/jpeg",
+    fit: "cover",
+    letterboxColor: "#141414",
+  },
+  processFull: {
+    label: "제작 과정 · 전체 표시",
+    aspectRatio: 0,
     maxWidth: 1600,
     maxHeight: 1200,
     quality: 0.9,
@@ -276,3 +311,46 @@ export function previewObjectFit(preset: AdminImagePreset): "cover" | "contain" 
   if (config.aspectRatio <= 0) return "contain";
   return config.fit;
 }
+
+/** contain + 비율 고정 없음: 미리보기에서 원본 비율 */
+export function usesNaturalAspectDisplay(preset: AdminImagePreset): boolean {
+  const config = ADMIN_IMAGE_PRESETS[preset];
+  return config.fit === "contain" && config.aspectRatio <= 0;
+}
+
+export function presetForImageUploadFit(
+  imageFit: ImageUploadFit | undefined,
+  coverPreset: AdminImagePreset,
+  containPreset: AdminImagePreset
+): AdminImagePreset {
+  return imageFit === "contain" ? containPreset : coverPreset;
+}
+
+export function processStepImagePreset(
+  imageFit?: ImageUploadFit
+): "process" | "processFull" {
+  return presetForImageUploadFit(imageFit, "process", "processFull");
+}
+
+export function aboutImagePreset(
+  imageFit?: ImageUploadFit
+): "aboutCover" | "aboutFull" {
+  return presetForImageUploadFit(imageFit, "aboutCover", "aboutFull");
+}
+
+export const IMAGE_UPLOAD_FIT_OPTIONS: {
+  value: ImageUploadFit;
+  label: string;
+  desc: string;
+}[] = [
+  {
+    value: "cover",
+    label: "자르기 · 꽉 차게",
+    desc: "업로드 시 이 섹션 비율에 맞춰 잘라 화면을 가득 채웁니다.",
+  },
+  {
+    value: "contain",
+    label: "전체 표시",
+    desc: "같은 4:3 칸 안에 이미지 전체가 보입니다 (위·아래 또는 좌·우 여백).",
+  },
+];

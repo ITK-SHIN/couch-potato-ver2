@@ -50,9 +50,12 @@ export function AdminPanel() {
     setDraft(content);
   }, [content]);
 
-  const setDraftRoot = (next: SiteContent) => {
-    setDraft(next);
-    updateContent(next);
+  const setDraftRoot = (next: SiteContent | ((prev: SiteContent) => SiteContent)) => {
+    setDraft((prev) => {
+      const resolved = typeof next === "function" ? next(prev) : next;
+      updateContent(resolved);
+      return resolved;
+    });
   };
 
   const handleSave = async () => {
@@ -175,9 +178,13 @@ export function AdminPanel() {
               <ImageField
                 label="배경 이미지"
                 preset="hero"
+                hint="히어로 배경은 항상 화면에 맞게 자르기(꽉 차게)로 업로드됩니다."
                 value={draft.hero.backgroundImage}
-                onChange={(url) =>
-                  setDraftRoot({ ...draft, hero: { ...draft.hero, backgroundImage: url } })
+                onChange={(next) =>
+                  setDraftRoot({
+                    ...draft,
+                    hero: { ...draft.hero, backgroundImage: next.image },
+                  })
                 }
               />
               <div className="grid sm:grid-cols-2 gap-4">
@@ -244,9 +251,9 @@ export function AdminPanel() {
                     label="이미지"
                     preset="highlight"
                     value={h.img}
-                    onChange={(url) => {
+                    onChange={(next) => {
                       const highlights = [...draft.highlights];
-                      highlights[i] = { ...h, img: url };
+                      highlights[i] = { ...h, img: next.image };
                       setDraftRoot({ ...draft, highlights });
                     }}
                   />
@@ -303,10 +310,22 @@ export function AdminPanel() {
               </AdminField>
               <ImageField
                 label="소개 이미지"
-                preset="about"
+                uploadFit={draft.about.imageFit ?? "contain"}
+                imageOriginal={draft.about.imageOriginal}
+                coverPreset="aboutCover"
+                containPreset="aboutFull"
+                uploadFitName="about-image-fit"
                 value={draft.about.image}
-                onChange={(url) =>
-                  setDraftRoot({ ...draft, about: { ...draft.about, image: url } })
+                onChange={(next) =>
+                  setDraftRoot((prev) => ({
+                    ...prev,
+                    about: {
+                      ...prev.about,
+                      image: next.image,
+                      imageOriginal: next.imageOriginal,
+                      imageFit: next.imageFit,
+                    },
+                  }))
                 }
               />
               <AdminField label="핵심 강점">
@@ -489,13 +508,30 @@ export function AdminPanel() {
                   </p>
                   <ImageField
                     label="이미지"
-                    preset="process"
+                    uploadFit={step.imageFit ?? "cover"}
+                    imageOriginal={step.imageOriginal}
+                    coverPreset="process"
+                    containPreset="processFull"
+                    uploadFitName={`process-image-fit-${i}`}
                     value={step.image}
-                    onChange={(url) => {
-                      const steps = [...draft.process.steps];
-                      steps[i] = { ...step, image: url };
-                      setDraftRoot({ ...draft, process: { ...draft.process, steps } });
-                    }}
+                    onChange={(next) =>
+                      setDraftRoot((prev) => ({
+                        ...prev,
+                        process: {
+                          ...prev.process,
+                          steps: prev.process.steps.map((s, idx) =>
+                            idx === i
+                              ? {
+                                  ...s,
+                                  image: next.image,
+                                  imageOriginal: next.imageOriginal,
+                                  imageFit: next.imageFit,
+                                }
+                              : s
+                          ),
+                        },
+                      }))
+                    }
                   />
                   <AdminField label="체크리스트">
                     <StringListEditor

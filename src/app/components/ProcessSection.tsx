@@ -1,11 +1,18 @@
 import { useState } from "react";
+import { FittedImage } from "../../components/FittedImage";
 import { useSiteContent } from "../../context/SiteContentContext";
+import { resolveDisplayImage } from "../../lib/displayImage";
+import type { ImageUploadFit } from "../../types/siteContent";
 
 export function ProcessSection() {
   const { content } = useSiteContent();
   const { title, subtitle, steps } = content.process;
   const [active, setActive] = useState(0);
   const step = steps[active];
+  const imageFit: ImageUploadFit = step?.imageFit ?? "cover";
+  const displaySrc = step
+    ? resolveDisplayImage(step.image, step.imageOriginal, imageFit)
+    : "";
 
   return (
     <section id="process" className="py-32 px-6">
@@ -48,22 +55,20 @@ export function ProcessSection() {
 
         {step && (
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div
-              className="relative overflow-hidden bg-muted"
-              style={{ aspectRatio: "4/3" }}
-            >
-              <img
-                src={step.image}
+            <div className="relative">
+              <FittedImage
+                key={`${displaySrc}-${imageFit}`}
+                src={displaySrc}
                 alt={step.title}
-                className="w-full h-full object-contain object-center transition-all duration-500"
+                fit={imageFit}
+                aspectRatio="4/3"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div
-                className="absolute bottom-6 left-6 text-white"
+                className="absolute bottom-4 left-4 text-white pointer-events-none select-none z-10"
                 style={{
                   fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "5rem",
-                  opacity: 0.15,
+                  fontSize: "clamp(3rem, 12vw, 5rem)",
+                  opacity: 0.12,
                   lineHeight: 1,
                 }}
               >

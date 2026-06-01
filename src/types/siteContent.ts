@@ -19,11 +19,18 @@ export interface ServiceItem {
   detail: string;
 }
 
+/** cover=업로드 시 비율에 맞게 자르기·꽉 참, contain=전체 표시 */
+export type ImageUploadFit = "cover" | "contain";
+
 export interface ProcessStep {
   num: string;
   title: string;
   sub: string;
   image: string;
+  /** 전체 표시용 원본(미처리 URL·원본 업로드). 없으면 image 사용 */
+  imageOriginal?: string;
+  /** 없으면 cover */
+  imageFit?: ImageUploadFit;
   items: string[];
 }
 
@@ -63,6 +70,9 @@ export interface SiteContent {
     philosophy1: string;
     philosophy2: string;
     image: string;
+    imageOriginal?: string;
+    /** 없으면 contain */
+    imageFit?: ImageUploadFit;
     strengthsTitle: string;
     strengths: string[];
     fieldsTitle: string;
