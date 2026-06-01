@@ -1,3 +1,4 @@
+import { PageLoader } from "../components/PageLoader";
 import { SitePageContent } from "../components/SitePageContent";
 import { useSiteContent } from "../context/SiteContentContext";
 
@@ -6,9 +7,10 @@ export function PublicSite() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center text-muted-foreground text-sm">
-        불러오는 중...
-      </div>
+      <PageLoader
+        message="사이트를 불러오는 중"
+        subMessage="콘텐츠를 준비하고 있습니다"
+      />
     );
   }
 
