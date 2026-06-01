@@ -6,17 +6,11 @@ import {
   MessageCircle,
   CheckCircle,
 } from "lucide-react";
-
-const services = [
-  "브랜드 콘텐츠",
-  "행사 스케치",
-  "숏폼 콘텐츠",
-  "인터뷰 영상",
-  "유튜브 콘텐츠",
-  "기타",
-];
+import { useSiteContent } from "../../context/SiteContentContext";
 
 export function ContactSection() {
+  const { content } = useSiteContent();
+  const c = content.contact;
   const [form, setForm] = useState({
     name: "",
     company: "",
@@ -32,10 +26,11 @@ export function ContactSection() {
     setSubmitted(true);
   };
 
+  const successLines = c.successMessage.split("\n");
+
   return (
     <section id="contact" className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
-        {/* Header */}
         <div className="flex items-center gap-4 mb-6">
           <span
             className="text-primary"
@@ -54,15 +49,12 @@ export function ContactSection() {
             className="text-foreground leading-tight mb-4"
             style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
           >
-            제작 문의
+            {c.title}
           </h2>
-          <p className="text-muted-foreground">
-            프로젝트 이야기를 들려주세요. 빠르게 연락드리겠습니다.
-          </p>
+          <p className="text-muted-foreground">{c.subtitle}</p>
         </div>
 
         <div className="grid md:grid-cols-5 gap-16">
-          {/* Contact info */}
           <div className="md:col-span-2 flex flex-col gap-10">
             <div>
               <h3
@@ -77,10 +69,8 @@ export function ContactSection() {
                     <Mail size={16} className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">
-                      이메일
-                    </p>
-                    <p className="text-foreground text-sm">bano94@naver.com</p>
+                    <p className="text-muted-foreground text-xs mb-0.5">이메일</p>
+                    <p className="text-foreground text-sm">{c.email}</p>
                   </div>
                 </li>
                 <li className="flex items-center gap-4">
@@ -89,7 +79,7 @@ export function ContactSection() {
                   </div>
                   <div>
                     <p className="text-muted-foreground text-xs mb-0.5">전화</p>
-                    <p className="text-foreground text-sm">010-8480-4376</p>
+                    <p className="text-foreground text-sm">{c.phone}</p>
                   </div>
                 </li>
                 <li className="flex items-center gap-4">
@@ -97,12 +87,8 @@ export function ContactSection() {
                     <Instagram size={16} className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">
-                      인스타그램
-                    </p>
-                    <p className="text-foreground text-sm">
-                      @couchpotato.studio
-                    </p>
+                    <p className="text-muted-foreground text-xs mb-0.5">인스타그램</p>
+                    <p className="text-foreground text-sm">{c.instagram}</p>
                   </div>
                 </li>
                 <li className="flex items-center gap-4">
@@ -110,45 +96,38 @@ export function ContactSection() {
                     <MessageCircle size={16} className="text-primary" />
                   </div>
                   <div>
-                    <p className="text-muted-foreground text-xs mb-0.5">
-                      카카오톡 채널
-                    </p>
-                    <p className="text-foreground text-sm">카우치포테이토</p>
+                    <p className="text-muted-foreground text-xs mb-0.5">카카오톡 채널</p>
+                    <p className="text-foreground text-sm">{c.kakao}</p>
                   </div>
                 </li>
               </ul>
             </div>
 
-            {/* Response time */}
             <div className="bg-muted p-6" style={{ borderRadius: "2px" }}>
               <p
                 className="text-primary text-xs tracking-wider uppercase mb-2"
                 style={{ letterSpacing: "0.15em" }}
               >
-                빠른 답변
+                {c.responseTitle}
               </p>
-              <p className="text-foreground text-sm leading-relaxed">
-                문의 접수 후 <strong>영업일 기준 1일 이내</strong>에
-                답변드립니다.
-              </p>
+              <p className="text-foreground text-sm leading-relaxed">{c.responseText}</p>
             </div>
           </div>
 
-          {/* Form */}
           <div className="md:col-span-3">
             {submitted ? (
               <div className="flex flex-col items-center justify-center h-full py-20 text-center">
                 <CheckCircle size={48} className="text-primary mb-6" />
-                <h3
-                  className="text-foreground mb-3"
-                  style={{ fontSize: "1.4rem", fontWeight: 600 }}
-                >
-                  문의가 접수되었습니다
+                <h3 className="text-foreground mb-3" style={{ fontSize: "1.4rem", fontWeight: 600 }}>
+                  {c.successTitle}
                 </h3>
                 <p className="text-muted-foreground text-sm leading-relaxed">
-                  빠른 시일 내에 연락드리겠습니다.
-                  <br />
-                  감사합니다.
+                  {successLines.map((line, i) => (
+                    <span key={i}>
+                      {line}
+                      {i < successLines.length - 1 && <br />}
+                    </span>
+                  ))}
                 </p>
                 <button
                   onClick={() => setSubmitted(false)}
@@ -169,9 +148,7 @@ export function ContactSection() {
                       type="text"
                       required
                       value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="w-full bg-muted border border-border text-foreground px-4 py-3 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40"
                       style={{ borderRadius: "2px" }}
                       placeholder="홍길동"
@@ -184,9 +161,7 @@ export function ContactSection() {
                     <input
                       type="text"
                       value={form.company}
-                      onChange={(e) =>
-                        setForm({ ...form, company: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, company: e.target.value })}
                       className="w-full bg-muted border border-border text-foreground px-4 py-3 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40"
                       style={{ borderRadius: "2px" }}
                       placeholder="(주)카우치포테이토"
@@ -202,9 +177,7 @@ export function ContactSection() {
                       type="email"
                       required
                       value={form.email}
-                      onChange={(e) =>
-                        setForm({ ...form, email: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, email: e.target.value })}
                       className="w-full bg-muted border border-border text-foreground px-4 py-3 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40"
                       style={{ borderRadius: "2px" }}
                       placeholder="hello@example.com"
@@ -217,9 +190,7 @@ export function ContactSection() {
                     <input
                       type="tel"
                       value={form.phone}
-                      onChange={(e) =>
-                        setForm({ ...form, phone: e.target.value })
-                      }
+                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
                       className="w-full bg-muted border border-border text-foreground px-4 py-3 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40"
                       style={{ borderRadius: "2px" }}
                       placeholder="010-0000-0000"
@@ -231,7 +202,7 @@ export function ContactSection() {
                     필요 서비스
                   </label>
                   <div className="flex flex-wrap gap-2">
-                    {services.map((svc) => (
+                    {c.formServices.map((svc) => (
                       <button
                         type="button"
                         key={svc}
@@ -255,9 +226,7 @@ export function ContactSection() {
                   <textarea
                     required
                     value={form.message}
-                    onChange={(e) =>
-                      setForm({ ...form, message: e.target.value })
-                    }
+                    onChange={(e) => setForm({ ...form, message: e.target.value })}
                     rows={5}
                     className="w-full bg-muted border border-border text-foreground px-4 py-3 text-sm outline-none focus:border-primary transition-colors placeholder:text-muted-foreground/40 resize-none"
                     style={{ borderRadius: "2px" }}

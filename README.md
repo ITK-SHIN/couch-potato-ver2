@@ -8,4 +8,9 @@
   Run `npm i` to install the dependencies.
 
   Run `npm run dev` to start the development server.
+
+  ## Site admin (CMS)
+
+  - Admin login: `/admin/login` (see [CMS_SETUP.md](./CMS_SETUP.md))
+  - Edit all page sections without code
   

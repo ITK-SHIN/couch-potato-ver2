@@ -1,15 +1,19 @@
 import { Instagram, Mail, MessageCircle, Phone } from "lucide-react";
+import { useSiteContent } from "../../context/SiteContentContext";
 
 const scrollTo = (href: string) => {
   document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
 };
 
 export function Footer() {
+  const { content } = useSiteContent();
+  const f = content.footer;
+  const taglineLines = f.tagline.split("\n");
+
   return (
-    <footer className="border-t border-border bg-secondary/30 px-6 py-20">
+    <footer id="footer" className="border-t border-border bg-secondary/30 px-6 py-20">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-14 lg:flex-row lg:items-end lg:justify-between">
-          {/* Brand */}
           <div className="max-w-md">
             <h3
               className="text-foreground mb-4"
@@ -22,9 +26,12 @@ export function Footer() {
               COUCHPOTATO
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">
-              기획부터 촬영, 편집까지
-              <br />
-              브랜드의 이야기를 영상으로 만드는 콘텐츠 제작 파트너
+              {taglineLines.map((line, i) => (
+                <span key={i}>
+                  {line}
+                  {i < taglineLines.length - 1 && <br />}
+                </span>
+              ))}
             </p>
             <button
               type="button"
@@ -32,11 +39,10 @@ export function Footer() {
               className="bg-primary text-primary-foreground px-6 py-3 text-sm tracking-wider hover:bg-primary/90 transition-colors"
               style={{ borderRadius: "2px" }}
             >
-              제작 문의하기
+              {f.ctaButton}
             </button>
           </div>
 
-          {/* Contact */}
           <div className="flex flex-col gap-8 sm:flex-row sm:gap-16 lg:gap-20">
             <ul className="space-y-5">
               <li className="flex items-center gap-4">
@@ -46,10 +52,10 @@ export function Footer() {
                 <div>
                   <p className="text-muted-foreground text-xs mb-0.5">이메일</p>
                   <a
-                    href="mailto:hello@couchpotato.kr"
+                    href={`mailto:${f.email}`}
                     className="text-foreground text-sm hover:text-primary transition-colors"
                   >
-                    bano94@naver.com
+                    {f.email}
                   </a>
                 </div>
               </li>
@@ -60,10 +66,10 @@ export function Footer() {
                 <div>
                   <p className="text-muted-foreground text-xs mb-0.5">전화</p>
                   <a
-                    href="tel:01000000000"
+                    href={`tel:${f.phone.replace(/[^0-9+]/g, "")}`}
                     className="text-foreground text-sm hover:text-primary transition-colors"
                   >
-                    010-8480-4376
+                    {f.phone}
                   </a>
                 </div>
               </li>
@@ -92,20 +98,14 @@ export function Footer() {
                   <MessageCircle size={16} />
                 </a>
               </div>
-              <p className="text-muted-foreground text-xs mt-4">
-                @couchpotato.studio
-              </p>
+              <p className="text-muted-foreground text-xs mt-4">{f.instagramHandle}</p>
             </div>
           </div>
         </div>
 
         <div className="mt-16 pt-8 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-          <p className="text-muted-foreground text-xs">
-            © 2025 CouchPotato. All rights reserved.
-          </p>
-          <p className="text-muted-foreground text-xs tracking-wide">
-            영상 기획 · 촬영 · 편집 전문 스튜디오
-          </p>
+          <p className="text-muted-foreground text-xs">{f.copyright}</p>
+          <p className="text-muted-foreground text-xs tracking-wide">{f.taglineBottom}</p>
         </div>
       </div>
     </footer>
