@@ -41,7 +41,11 @@ export function AboutSection() {
 
         <div className="grid md:grid-cols-5 gap-8 mb-24">
           <div className="md:col-span-3 relative overflow-hidden" style={{ aspectRatio: "16/9" }}>
-            <img src={about.image} alt="편집 스튜디오" className="w-full h-full object-cover" />
+            <img
+              src={about.image}
+              alt="편집 스튜디오"
+              className="w-full h-full object-contain object-center bg-muted"
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
           </div>
           <div className="md:col-span-2 flex flex-col justify-between py-4">

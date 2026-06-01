@@ -7,13 +7,7 @@ import { useAdminAuth } from "../context/AdminAuthContext";
 import { useSiteContent } from "../context/SiteContentContext";
 import { defaultSiteContent } from "../data/defaultSiteContent";
 import { serviceIconOptions } from "../lib/serviceIcons";
-import type {
-  PortfolioVideoType,
-  SiteContent,
-  SiteSectionKey,
-} from "../types/siteContent";
-import { emptyPortfolioItem } from "../lib/portfolioVideo";
-import { getYoutubeThumbnail, parseYoutubeId } from "../lib/youtube";
+import type { SiteContent, SiteSectionKey } from "../types/siteContent";
 import {
   AdminField,
   AdminInput,
@@ -23,6 +17,9 @@ import {
 import { ImageField } from "./components/ImageField";
 import { StringListEditor } from "./components/StringListEditor";
 import { VideoField } from "./components/VideoField";
+import { PortfolioCategoriesEditor } from "./components/PortfolioCategoriesEditor";
+import { PortfolioItemAddDialog } from "./components/PortfolioItemAddDialog";
+import { PortfolioItemsEditor } from "./components/PortfolioItemsEditor";
 import { PortfolioYoutubeBulkImport } from "./components/PortfolioYoutubeBulkImport";
 
 const SECTIONS: { key: SiteSectionKey; label: string }[] = [
@@ -47,6 +44,7 @@ export function AdminPanel() {
   const [draft, setDraft] = useState<SiteContent>(content);
   const [section, setSection] = useState<SiteSectionKey>("hero");
   const [previewOpen, setPreviewOpen] = useState(false);
+  const [portfolioAddOpen, setPortfolioAddOpen] = useState(false);
 
   useEffect(() => {
     setDraft(content);
@@ -176,6 +174,7 @@ export function AdminPanel() {
               </AdminField>
               <ImageField
                 label="배경 이미지"
+                preset="hero"
                 value={draft.hero.backgroundImage}
                 onChange={(url) =>
                   setDraftRoot({ ...draft, hero: { ...draft.hero, backgroundImage: url } })
@@ -243,6 +242,7 @@ export function AdminPanel() {
                   </AdminField>
                   <ImageField
                     label="이미지"
+                    preset="highlight"
                     value={h.img}
                     onChange={(url) => {
                       const highlights = [...draft.highlights];
@@ -303,6 +303,7 @@ export function AdminPanel() {
               </AdminField>
               <ImageField
                 label="소개 이미지"
+                preset="about"
                 value={draft.about.image}
                 onChange={(url) =>
                   setDraftRoot({ ...draft, about: { ...draft.about, image: url } })
@@ -488,6 +489,7 @@ export function AdminPanel() {
                   </p>
                   <ImageField
                     label="이미지"
+                    preset="process"
                     value={step.image}
                     onChange={(url) => {
                       const steps = [...draft.process.steps];
@@ -524,21 +526,18 @@ export function AdminPanel() {
                   }
                 />
               </AdminField>
-              <AdminField label="카테고리 (쉼표 구분, 첫 항목은 '전체')">
-                <AdminInput
-                  value={draft.portfolio.categories.join(", ")}
-                  onChange={(e) =>
-                    setDraftRoot({
-                      ...draft,
-                      portfolio: {
-                        ...draft.portfolio,
-                        categories: e.target.value.split(",").map((s) => s.trim()),
-                      },
-                    })
-                  }
-                />
-              </AdminField>
+              <PortfolioCategoriesEditor
+                categories={draft.portfolio.categories}
+                items={draft.portfolio.items}
+                onChange={(categories, items) =>
+                  setDraftRoot({
+                    ...draft,
+                    portfolio: { ...draft.portfolio, categories, items },
+                  })
+                }
+              />
               <PortfolioYoutubeBulkImport
+                categories={draft.portfolio.categories}
                 items={draft.portfolio.items}
                 onAddItems={(newItems) =>
                   setDraftRoot({
@@ -550,180 +549,38 @@ export function AdminPanel() {
                   })
                 }
               />
-              {draft.portfolio.items.map((item, i) => (
-                <div key={item.id} className="p-4 border border-border space-y-3">
-                  <div className="flex justify-between items-center">
-                    <p className="text-sm font-medium">{item.title || `작품 ${i + 1}`}</p>
-                    <button
-                      type="button"
-                      className="text-xs text-destructive hover:underline"
-                      onClick={() => {
-                        const items = draft.portfolio.items.filter((_, j) => j !== i);
-                        setDraftRoot({
-                          ...draft,
-                          portfolio: { ...draft.portfolio, items },
-                        });
-                      }}
-                    >
-                      삭제
-                    </button>
-                  </div>
-                  <AdminField label="카테고리">
-                    <AdminInput
-                      value={item.category}
-                      onChange={(e) => {
-                        const items = [...draft.portfolio.items];
-                        items[i] = { ...item, category: e.target.value };
-                        setDraftRoot({ ...draft, portfolio: { ...draft.portfolio, items } });
-                      }}
-                    />
-                  </AdminField>
-                  <AdminField label="제목">
-                    <AdminInput
-                      value={item.title}
-                      onChange={(e) => {
-                        const items = [...draft.portfolio.items];
-                        items[i] = { ...item, title: e.target.value };
-                        setDraftRoot({ ...draft, portfolio: { ...draft.portfolio, items } });
-                      }}
-                    />
-                  </AdminField>
-                  <AdminField label="클라이언트">
-                    <AdminInput
-                      value={item.client}
-                      onChange={(e) => {
-                        const items = [...draft.portfolio.items];
-                        items[i] = { ...item, client: e.target.value };
-                        setDraftRoot({ ...draft, portfolio: { ...draft.portfolio, items } });
-                      }}
-                    />
-                  </AdminField>
-                  <AdminField label="재생 시간">
-                    <AdminInput
-                      value={item.duration}
-                      onChange={(e) => {
-                        const items = [...draft.portfolio.items];
-                        items[i] = { ...item, duration: e.target.value };
-                        setDraftRoot({ ...draft, portfolio: { ...draft.portfolio, items } });
-                      }}
-                    />
-                  </AdminField>
-                  <AdminField label="영상 종류">
-                    <select
-                      value={item.videoType ?? "none"}
-                      className={adminInputClass}
-                      onChange={(e) => {
-                        const videoType = e.target.value as PortfolioVideoType;
-                        const items = [...draft.portfolio.items];
-                        items[i] = {
-                          ...item,
-                          videoType,
-                          youtubeUrl:
-                            videoType === "youtube" ? item.youtubeUrl ?? "" : "",
-                          videoUrl:
-                            videoType === "upload" ? item.videoUrl ?? "" : "",
-                        };
-                        setDraftRoot({
-                          ...draft,
-                          portfolio: { ...draft.portfolio, items },
-                        });
-                      }}
-                    >
-                      <option value="none">없음 (썸네일만)</option>
-                      <option value="youtube">YouTube (권장)</option>
-                      <option value="upload">영상 업로드 (Supabase)</option>
-                    </select>
-                  </AdminField>
-                  {item.videoType === "youtube" && (
-                    <>
-                      <AdminField
-                        label="YouTube URL"
-                        hint="watch, youtu.be, shorts 링크 또는 11자리 영상 ID"
-                      >
-                        <AdminInput
-                          value={item.youtubeUrl ?? ""}
-                          placeholder="https://www.youtube.com/watch?v=..."
-                          onChange={(e) => {
-                            const items = [...draft.portfolio.items];
-                            items[i] = { ...item, youtubeUrl: e.target.value };
-                            setDraftRoot({
-                              ...draft,
-                              portfolio: { ...draft.portfolio, items },
-                            });
-                          }}
-                        />
-                      </AdminField>
-                      <button
-                        type="button"
-                        className="text-sm text-primary hover:underline"
-                        onClick={() => {
-                          const id = parseYoutubeId(item.youtubeUrl ?? "");
-                          if (!id) {
-                            toast.error("올바른 YouTube URL을 입력해 주세요.");
-                            return;
-                          }
-                          const items = [...draft.portfolio.items];
-                          items[i] = {
-                            ...item,
-                            image: getYoutubeThumbnail(id),
-                          };
-                          setDraftRoot({
-                            ...draft,
-                            portfolio: { ...draft.portfolio, items },
-                          });
-                          toast.success("YouTube 썸네일을 적용했습니다.");
-                        }}
-                      >
-                        YouTube 썸네일 적용
-                      </button>
-                    </>
-                  )}
-                  {item.videoType === "upload" && (
-                    <VideoField
-                      label="영상 파일 (MP4/WebM)"
-                      value={item.videoUrl ?? ""}
-                      onChange={(url) => {
-                        const items = [...draft.portfolio.items];
-                        items[i] = { ...item, videoUrl: url };
-                        setDraftRoot({
-                          ...draft,
-                          portfolio: { ...draft.portfolio, items },
-                        });
-                      }}
-                    />
-                  )}
-                  <ImageField
-                    label="썸네일"
-                    value={item.image}
-                    onChange={(url) => {
-                      const items = [...draft.portfolio.items];
-                      items[i] = { ...item, image: url };
-                      setDraftRoot({ ...draft, portfolio: { ...draft.portfolio, items } });
-                    }}
-                  />
-                </div>
-              ))}
               <button
                 type="button"
-                className="text-sm text-primary hover:underline"
-                onClick={() =>
+                className="px-4 py-2 border border-primary text-primary text-sm hover:bg-primary hover:text-primary-foreground transition-colors"
+                style={{ borderRadius: "2px" }}
+                onClick={() => setPortfolioAddOpen(true)}
+              >
+                + 포트폴리오 추가
+              </button>
+              <PortfolioItemAddDialog
+                open={portfolioAddOpen}
+                onOpenChange={setPortfolioAddOpen}
+                categories={draft.portfolio.categories}
+                onConfirm={(item) =>
                   setDraftRoot({
                     ...draft,
                     portfolio: {
                       ...draft.portfolio,
-                      items: [
-                        ...draft.portfolio.items,
-                        emptyPortfolioItem({
-                          id: newId(),
-                          image: defaultSiteContent.portfolio.items[0].image,
-                        }),
-                      ],
+                      items: [{ ...item, id: newId() }, ...draft.portfolio.items],
                     },
                   })
                 }
-              >
-                + 포트폴리오 추가
-              </button>
+              />
+              <PortfolioItemsEditor
+                items={draft.portfolio.items}
+                categories={draft.portfolio.categories}
+                onItemsChange={(items) =>
+                  setDraftRoot({
+                    ...draft,
+                    portfolio: { ...draft.portfolio, items },
+                  })
+                }
+              />
             </div>
           )}
 

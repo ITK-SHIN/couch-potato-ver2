@@ -48,11 +48,14 @@ export function ProcessSection() {
 
         {step && (
           <div className="grid md:grid-cols-2 gap-12 items-center">
-            <div className="relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+            <div
+              className="relative overflow-hidden bg-muted"
+              style={{ aspectRatio: "4/3" }}
+            >
               <img
                 src={step.image}
                 alt={step.title}
-                className="w-full h-full object-cover transition-all duration-500"
+                className="w-full h-full object-contain object-center transition-all duration-500"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
               <div

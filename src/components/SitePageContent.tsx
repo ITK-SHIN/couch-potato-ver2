@@ -24,13 +24,13 @@ export function SitePageContent() {
           {content.highlights.map((h) => (
             <div key={h.num} className="group">
               <div
-                className="relative overflow-hidden mb-6"
+                className="relative overflow-hidden mb-6 bg-muted"
                 style={{ aspectRatio: "16/10" }}
               >
                 <img
                   src={h.img}
                   alt={h.title}
-                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div

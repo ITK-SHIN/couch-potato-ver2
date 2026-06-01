@@ -16,15 +16,19 @@ function collectYoutubeIds(items: PortfolioItem[]): Set<string> {
 }
 
 export function PortfolioYoutubeBulkImport({
+  categories = [],
   items,
   onAddItems,
 }: {
+  categories?: string[];
   items: PortfolioItem[];
   onAddItems: (newItems: PortfolioItem[]) => void;
 }) {
   const [bulkText, setBulkText] = useState("");
   const [clientLabel, setClientLabel] = useState("Try to 신감독");
   const [importing, setImporting] = useState(false);
+  const importCategory =
+    categories.filter((c) => c !== "전체")[0] ?? "유튜브";
 
   const handleImport = async () => {
     if (!bulkText.trim()) {
@@ -36,7 +40,7 @@ export function PortfolioYoutubeBulkImport({
     try {
       const { items: created, skipped, invalid } =
         await buildPortfolioItemsFromYoutubeLines(bulkText, {
-          category: "유튜브",
+          category: importCategory,
           existingIds: collectYoutubeIds(items),
           fetchTitles: true,
         });

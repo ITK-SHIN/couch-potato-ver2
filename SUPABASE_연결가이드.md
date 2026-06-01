@@ -110,6 +110,8 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 | 증상 | 원인 | 해결 |
 |------|------|------|
+| 로그인 `Failed to fetch` / CORS (localhost→vercel.app) | `VITE_SUPABASE_URL`에 **배포 URL**을 넣음 | Supabase **Project URL** (`https://xxxx.supabase.co`)로 수정 후 dev 재시작 |
+| `ERR_NAME_NOT_RESOLVED` | Project URL **오타** (anon 키의 `ref`와 불일치) | 대시보드 API의 URL을 그대로 복사·붙여넣기 후 dev 재시작 |
 | 여전히 비밀번호만 로그인 | Vercel/local에 env 없음 | `.env` 또는 Vercel env 추가 후 **dev 서버·재배포** |
 | 저장 실패 / RLS 오류 | SQL 미실행 또는 로그인 안 됨 | `schema.sql` 실행, `/admin` 로그인 상태 확인 |
 | 다른 사람만 예전 내용 | 배포 env 없음 | Vercel에 `VITE_*` 추가 후 Redeploy |

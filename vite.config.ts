@@ -11,6 +11,8 @@ import {
   ContactRateLimitError,
   getClientIpFromNodeHeaders,
 } from "./lib/contact-rate-limit";
+import { fetchRemoteImageBuffer } from "./lib/image-proxy";
+import { fetchYoutubeMetadataFromWatchPage } from "./lib/youtube-metadata";
 
 function figmaAssetResolver() {
   return {
@@ -21,6 +23,88 @@ function figmaAssetResolver() {
         return path.resolve(__dirname, "src/assets", filename);
       }
     },
+  };
+}
+
+function imageProxyDevMiddleware(): Connect.NextHandleFunction {
+  return (req, res, next) => {
+    const [pathname, query = ""] = (req.url ?? "").split("?");
+    if (pathname !== "/api/image-proxy") {
+      next();
+      return;
+    }
+    if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+    if (req.method !== "GET") {
+      res.statusCode = 405;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
+    }
+    const imageUrl = new URLSearchParams(query).get("url")?.trim();
+    if (!imageUrl) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "url required" }));
+      return;
+    }
+    void fetchRemoteImageBuffer(imageUrl)
+      .then(({ buffer, contentType }) => {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", contentType);
+        res.end(Buffer.from(buffer));
+      })
+      .catch((err) => {
+        res.statusCode = 400;
+        res.setHeader("Content-Type", "application/json");
+        res.end(
+          JSON.stringify({
+            error: err instanceof Error ? err.message : "fetch failed",
+          })
+        );
+      });
+  };
+}
+
+function youtubeMetadataDevMiddleware(): Connect.NextHandleFunction {
+  return (req, res, next) => {
+    const [pathname, query = ""] = (req.url ?? "").split("?");
+    if (pathname !== "/api/youtube-metadata") {
+      next();
+      return;
+    }
+    if (req.method === "OPTIONS") {
+      res.statusCode = 204;
+      res.end();
+      return;
+    }
+    if (req.method !== "GET") {
+      res.statusCode = 405;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "Method not allowed" }));
+      return;
+    }
+    const videoId = new URLSearchParams(query).get("v")?.trim();
+    if (!videoId) {
+      res.statusCode = 400;
+      res.setHeader("Content-Type", "application/json");
+      res.end(JSON.stringify({ error: "v (video id) required" }));
+      return;
+    }
+    void fetchYoutubeMetadataFromWatchPage(videoId)
+      .then((meta) => {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify(meta));
+      })
+      .catch(() => {
+        res.statusCode = 500;
+        res.setHeader("Content-Type", "application/json");
+        res.end(JSON.stringify({ error: "metadata fetch failed" }));
+      });
   };
 }
 
@@ -101,6 +185,8 @@ export default defineConfig(({ mode }) => {
       {
         name: "dev-contact-api",
         configureServer(server) {
+          server.middlewares.use(imageProxyDevMiddleware());
+          server.middlewares.use(youtubeMetadataDevMiddleware());
           server.middlewares.use(contactApiDevMiddleware(env));
         },
       },

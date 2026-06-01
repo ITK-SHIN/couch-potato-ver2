@@ -6,18 +6,71 @@ import {
   parseYoutubeId,
 } from "./youtube";
 
-export async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
+type YoutubeOembed = {
+  title?: string;
+  author_name?: string;
+};
+
+async function fetchYoutubeOembed(
+  videoId: string
+): Promise<YoutubeOembed | null> {
   try {
     const url = getYoutubeWatchUrl(videoId);
     const res = await fetch(
       `https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`
     );
     if (!res.ok) return null;
-    const data = (await res.json()) as { title?: string };
-    return data.title?.trim() || null;
+    return (await res.json()) as YoutubeOembed;
   } catch {
     return null;
   }
+}
+
+export async function fetchYoutubeTitle(videoId: string): Promise<string | null> {
+  const data = await fetchYoutubeOembed(videoId);
+  return data?.title?.trim() || null;
+}
+
+export type YoutubeVideoMetadata = {
+  title: string;
+  client: string;
+  duration: string;
+  image: string;
+};
+
+/** oEmbed(제목·채널) + API(재생 시간)로 작품 메타 자동 채움 */
+export async function fetchYoutubeVideoMetadata(
+  videoIdOrUrl: string
+): Promise<YoutubeVideoMetadata | null> {
+  const id = parseYoutubeId(videoIdOrUrl) ?? videoIdOrUrl.trim();
+  if (!id) return null;
+
+  const oembed = await fetchYoutubeOembed(id);
+  let duration = "";
+  let title = oembed?.title?.trim() ?? "";
+
+  try {
+    const res = await fetch(
+      `/api/youtube-metadata?v=${encodeURIComponent(id)}`
+    );
+    if (res.ok) {
+      const data = (await res.json()) as {
+        title?: string | null;
+        duration?: string | null;
+      };
+      if (data.duration?.trim()) duration = data.duration.trim();
+      if (!title && data.title?.trim()) title = data.title.trim();
+    }
+  } catch {
+    /* 로컬/배포 없을 때 재생 시간만 비움 */
+  }
+
+  return {
+    title,
+    client: oembed?.author_name?.trim() ?? "",
+    duration,
+    image: getYoutubeThumbnail(id),
+  };
 }
 
 /** 줄 단위 URL·ID 목록 → 포트폴리오 항목 (중복 ID 제외) */

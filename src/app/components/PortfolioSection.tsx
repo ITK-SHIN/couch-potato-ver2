@@ -1,5 +1,11 @@
-import { useState } from "react";
-import { Play } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight,
+  Play,
+} from "lucide-react";
 import { useSiteContent } from "../../context/SiteContentContext";
 import {
   canPlayPortfolioItem,
@@ -8,17 +14,49 @@ import {
 import { PortfolioVideoModal } from "./PortfolioVideoModal";
 import type { PortfolioItem } from "../../types/siteContent";
 
+const PAGE_SIZE = 8;
+
 export function PortfolioSection() {
   const { content } = useSiteContent();
   const { title, subtitle, categories, items, bottomButton } = content.portfolio;
   const [activeCategory, setActiveCategory] = useState("전체");
+  const [currentPage, setCurrentPage] = useState(1);
   const [hovered, setHovered] = useState<string | null>(null);
   const [playingItem, setPlayingItem] = useState<PortfolioItem | null>(null);
 
-  const filtered =
-    activeCategory === "전체"
-      ? items
-      : items.filter((p) => p.category === activeCategory);
+  const filtered = useMemo(
+    () =>
+      activeCategory === "전체"
+        ? items
+        : items.filter((p) => p.category === activeCategory),
+    [activeCategory, items]
+  );
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, currentPage]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
+
+  const goToPage = (page: number) => {
+    const next = Math.min(Math.max(1, page), totalPages);
+    setCurrentPage(next);
+    document.getElementById("portfolio-grid")?.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+    });
+  };
 
   const openItem = (item: PortfolioItem) => {
     if (canPlayPortfolioItem(item)) {
@@ -69,8 +107,11 @@ export function PortfolioSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {filtered.map((item) => {
+        <div
+          id="portfolio-grid"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4"
+        >
+          {paginatedItems.map((item) => {
             const playable = canPlayPortfolioItem(item);
             const thumb = getPortfolioThumbnail(item);
 
@@ -143,6 +184,87 @@ export function PortfolioSection() {
             );
           })}
         </div>
+
+        {totalPages > 1 && (
+          <nav
+            className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
+            aria-label="포트폴리오 페이지"
+          >
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(1)}
+                disabled={currentPage <= 1}
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                style={{ borderRadius: "2px" }}
+                aria-label="첫 페이지"
+              >
+                <ChevronsLeft size={16} />
+                처음
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage <= 1}
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                style={{ borderRadius: "2px" }}
+                aria-label="이전 페이지"
+              >
+                <ChevronLeft size={16} />
+                이전
+              </button>
+            </div>
+
+            <div className="flex items-center gap-1.5">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => goToPage(page)}
+                  aria-current={page === currentPage ? "page" : undefined}
+                  className={`min-w-[2.25rem] h-9 px-2 text-xs transition-all ${
+                    page === currentPage
+                      ? "bg-primary text-primary-foreground"
+                      : "border border-border text-muted-foreground hover:text-foreground hover:border-primary"
+                  }`}
+                  style={{ borderRadius: "2px" }}
+                >
+                  {page}
+                </button>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage >= totalPages}
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                style={{ borderRadius: "2px" }}
+                aria-label="다음 페이지"
+              >
+                다음
+                <ChevronRight size={16} />
+              </button>
+              <button
+                type="button"
+                onClick={() => goToPage(totalPages)}
+                disabled={currentPage >= totalPages}
+                className="inline-flex items-center gap-1 px-3 py-2 text-xs border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors disabled:opacity-40 disabled:pointer-events-none"
+                style={{ borderRadius: "2px" }}
+                aria-label="마지막 페이지"
+              >
+                마지막
+                <ChevronsRight size={16} />
+              </button>
+            </div>
+
+            <p className="text-muted-foreground text-xs sm:ml-2">
+              {currentPage} / {totalPages}
+              <span className="hidden sm:inline"> · 총 {filtered.length}개</span>
+            </p>
+          </nav>
+        )}
 
         <div className="text-center mt-12">
           <button
