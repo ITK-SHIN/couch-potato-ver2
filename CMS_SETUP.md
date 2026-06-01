@@ -21,37 +21,17 @@
 
 ## 2단계: Supabase 연결 (권장)
 
-### 1) 프로젝트 생성
+**상세 단계는 [SUPABASE_연결가이드.md](./SUPABASE_연결가이드.md) 를 따르세요.**
 
-1. [supabase.com](https://supabase.com)에서 새 프로젝트 생성
-2. **Settings → API**에서 URL, `anon` key 복사
+요약:
 
-### 2) 환경 변수
+1. Supabase 프로젝트 생성 → **Settings → API**에서 URL, `anon` key 복사
+2. `.env` 및 **Vercel Environment Variables**에 `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY` 설정
+3. SQL Editor에서 `supabase/schema.sql` 실행 (DB + `media` 버킷 포함)
+4. **Authentication → Users**에서 관리자 1명 생성
+5. `/admin/login`에서 **이메일·비밀번호** 로그인 후 저장
 
-프로젝트 루트에 `.env` 파일 생성:
-
-```env
-VITE_SUPABASE_URL=https://xxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbG...
-```
-
-### 3) DB 테이블
-
-Supabase **SQL Editor**에서 `supabase/schema.sql` 내용을 실행합니다.
-
-### 4) 이미지 저장소
-
-**Storage**에서 bucket 이름 `media` 생성 → **Public bucket** 체크
-
-### 5) 관리자 계정
-
-**Authentication → Users**에서 운영자 이메일 1개 추가 (이메일/비밀번호)
-
-이후 `/admin/login`에서 **이메일·비밀번호**로 로그인합니다.
-
-### 6) 배포 시
-
-Vercel/Netlify 등에도 동일한 `VITE_*` 환경 변수를 등록하세요.
+> env 적용 후 `npm run dev` 재시작, Vercel은 **Redeploy** 필요.
 
 ## 관리 화면에서 수정 가능한 항목
 
