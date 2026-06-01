@@ -1,8 +1,8 @@
 import { ChevronDown } from "lucide-react";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 
 export function HeroSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const hero = content.hero;
 
   const scrollToAbout = () => {

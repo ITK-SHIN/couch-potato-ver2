@@ -20,6 +20,7 @@ function normalizePortfolioItem(item: PortfolioItem): PortfolioItem {
 export function mergeSiteContent(partial: Partial<SiteContent> | null): SiteContent {
   if (!partial) return defaultSiteContent;
   return {
+    ...(partial.seo ? { seo: partial.seo } : {}),
     hero: { ...defaultSiteContent.hero, ...partial.hero },
     highlights: partial.highlights ?? defaultSiteContent.highlights,
     about: {

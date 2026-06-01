@@ -6,7 +6,7 @@ import {
   ChevronsRight,
   Play,
 } from "lucide-react";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 import {
   canPlayPortfolioItem,
   getPortfolioThumbnail,
@@ -17,7 +17,7 @@ import type { PortfolioItem } from "../../types/siteContent";
 const PAGE_SIZE = 8;
 
 export function PortfolioSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const { title, subtitle, categories, items, bottomButton } = content.portfolio;
   const [activeCategory, setActiveCategory] = useState("전체");
   const [currentPage, setCurrentPage] = useState(1);

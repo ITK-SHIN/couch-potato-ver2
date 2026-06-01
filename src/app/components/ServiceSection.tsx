@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 import { getServiceIcon } from "../../lib/serviceIcons";
 
 export function ServiceSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const { title, subtitle, items, cta } = content.services;
   const [hovered, setHovered] = useState<number | null>(null);
 

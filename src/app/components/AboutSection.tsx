@@ -1,10 +1,10 @@
 import { FittedImage } from "../../components/FittedImage";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 import { resolveDisplayImage } from "../../lib/displayImage";
 import type { ImageUploadFit } from "../../types/siteContent";
 
 export function AboutSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const about = content.about;
   const imageFit: ImageUploadFit = about.imageFit ?? "contain";
   const displaySrc = resolveDisplayImage(about.image, about.imageOriginal, imageFit);

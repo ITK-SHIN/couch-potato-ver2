@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Eye, EyeOff } from "lucide-react";
 import { SitePageContent } from "../components/SitePageContent";
-import type { SiteSectionKey } from "../types/siteContent";
+import { SiteContentPreviewProvider } from "../context/SiteContentDisplayContext";
+import type { SiteContent, SiteSectionKey } from "../types/siteContent";
 
 const SECTION_ANCHOR: Record<SiteSectionKey, string> = {
   hero: "home",
@@ -17,10 +18,12 @@ const SECTION_ANCHOR: Record<SiteSectionKey, string> = {
 const SITE_LAYOUT_WIDTH = 1280;
 
 export function AdminLivePreview({
+  draft,
   activeSection,
   mobileOpen,
   onToggleMobile,
 }: {
+  draft: SiteContent;
   activeSection: SiteSectionKey;
   mobileOpen: boolean;
   onToggleMobile: () => void;
@@ -64,7 +67,6 @@ export function AdminLivePreview({
         {mobileOpen ? "미리보기 닫기" : "미리보기"}
       </button>
 
-      {/* lg: 그리드 2열 중 오른쪽 50% · 모바일: 슬라이드 패널 */}
       <aside
         className={`
           flex-col min-h-0 h-full w-full bg-card
@@ -75,9 +77,9 @@ export function AdminLivePreview({
         `}
       >
         <div className="shrink-0 px-4 py-3 border-b border-border bg-secondary/50">
-          <p className="text-sm font-medium text-foreground">실시간 미리보기</p>
+          <p className="text-sm font-medium text-foreground">초안 미리보기</p>
           <p className="text-xs text-muted-foreground mt-0.5">
-            입력 즉시 반영 · 저장 전에도 확인 가능
+            저장 전 초안만 표시 · 공개 사이트는 저장 후 반영
           </p>
         </div>
 
@@ -92,7 +94,9 @@ export function AdminLivePreview({
               width: scale > 0 ? `${100 / scale}%` : "100%",
             }}
           >
-            <SitePageContent />
+            <SiteContentPreviewProvider content={draft}>
+              <SitePageContent />
+            </SiteContentPreviewProvider>
           </div>
         </div>
       </aside>

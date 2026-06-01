@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { FittedImage } from "../../components/FittedImage";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 import { resolveDisplayImage } from "../../lib/displayImage";
 import type { ImageUploadFit } from "../../types/siteContent";
 
 export function ProcessSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const { title, subtitle, steps } = content.process;
   const [active, setActive] = useState(0);
   const step = steps[active];

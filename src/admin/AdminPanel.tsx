@@ -1,12 +1,13 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ExternalLink, LogOut, Save } from "lucide-react";
 import { AdminLivePreview } from "./AdminLivePreview";
 import { Link, useNavigate } from "react-router";
 import { toast, Toaster } from "sonner";
 import { useAdminAuth } from "../context/AdminAuthContext";
 import { useSiteContent } from "../context/SiteContentContext";
+import { isSiteContentDirty } from "../lib/isSiteContentDirty";
 import { serviceIconOptions } from "../lib/serviceIcons";
-import type { SiteContent, SiteSectionKey } from "../types/siteContent";
+import type { SiteContent, SiteSectionKey, SiteSeoFields } from "../types/siteContent";
 import {
   AdminField,
   AdminInput,
@@ -35,34 +36,57 @@ function newId() {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 }
 
+function patchSeo(
+  prev: SiteContent,
+  patch: Partial<SiteSeoFields>
+): SiteContent {
+  return { ...prev, seo: { ...prev.seo, ...patch } };
+}
+
 export function AdminPanel() {
-  const { content, updateContent, save, saving } = useSiteContent();
+  const { content: published, save, saving } = useSiteContent();
   const { logout } = useAdminAuth();
   const navigate = useNavigate();
-  const [draft, setDraft] = useState<SiteContent>(content);
+  const [draft, setDraft] = useState<SiteContent>(published);
   const [section, setSection] = useState<SiteSectionKey>("hero");
   const [previewOpen, setPreviewOpen] = useState(false);
   const [portfolioAddOpen, setPortfolioAddOpen] = useState(false);
 
+  const hasUnsavedChanges = useMemo(
+    () => isSiteContentDirty(published, draft),
+    [published, draft]
+  );
+
   useEffect(() => {
-    setDraft(content);
-  }, [content]);
+    setDraft(published);
+  }, [published]);
+
+  useEffect(() => {
+    if (!hasUnsavedChanges) return;
+    const onBeforeUnload = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", onBeforeUnload);
+    return () => window.removeEventListener("beforeunload", onBeforeUnload);
+  }, [hasUnsavedChanges]);
 
   const setDraftRoot = (next: SiteContent | ((prev: SiteContent) => SiteContent)) => {
-    setDraft((prev) => {
-      const resolved = typeof next === "function" ? next(prev) : next;
-      updateContent(resolved);
-      return resolved;
-    });
+    setDraft((prev) => (typeof next === "function" ? next(prev) : next));
   };
 
   const handleSave = async () => {
     try {
       await save(draft);
-      toast.success("저장되었습니다. 사이트에 바로 반영됩니다.");
+      toast.success("저장되었습니다. 공개 사이트에 반영되었습니다.");
     } catch (e) {
       toast.error(e instanceof Error ? e.message : "저장 실패");
     }
+  };
+
+  const handleDiscard = () => {
+    if (!hasUnsavedChanges) return;
+    setDraft(published);
+    toast.message("변경 사항을 되돌렸습니다.");
   };
 
   const handleLogout = async () => {
@@ -93,16 +117,30 @@ export function AdminPanel() {
             사이트 보기
           </Link>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap justify-end">
+          {hasUnsavedChanges && (
+            <span className="text-xs text-amber-600 dark:text-amber-400 mr-1">
+              미저장 변경
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={handleDiscard}
+            disabled={!hasUnsavedChanges || saving}
+            className="inline-flex items-center gap-2 border border-border px-3 py-2 text-sm text-muted-foreground hover:text-foreground disabled:opacity-40"
+            style={{ borderRadius: "2px" }}
+          >
+            되돌리기
+          </button>
           <button
             type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || !hasUnsavedChanges}
             className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 text-sm hover:bg-primary/90 disabled:opacity-50"
             style={{ borderRadius: "2px" }}
           >
             <Save size={16} />
-            {saving ? "저장 중..." : "저장하기"}
+            {saving ? "저장 중..." : "저장·공개 반영"}
           </button>
           <button
             type="button"
@@ -202,6 +240,60 @@ export function AdminPanel() {
                         ...draft,
                         hero: { ...draft.hero, secondaryButton: e.target.value },
                       })
+                    }
+                  />
+                </AdminField>
+              </div>
+              <div className="p-4 border border-border/80 bg-secondary/20 space-y-4 mt-6">
+                <h3 className="text-sm font-semibold text-foreground">검색·SNS (SEO)</h3>
+                <p className="text-xs text-muted-foreground">
+                  비우면 히어로 문구로 자동 설정됩니다. 저장 후 공개 사이트·검색엔진에 반영됩니다.
+                </p>
+                <AdminField label="사이트 이름">
+                  <AdminInput
+                    value={draft.seo?.siteName ?? ""}
+                    onChange={(e) =>
+                      setDraftRoot((prev) =>
+                        patchSeo(prev, { siteName: e.target.value })
+                      )
+                    }
+                    placeholder="예: 코치포테이토"
+                  />
+                </AdminField>
+                <AdminField label="페이지 제목 (title)">
+                  <AdminInput
+                    value={draft.seo?.title ?? ""}
+                    onChange={(e) =>
+                      setDraftRoot((prev) => patchSeo(prev, { title: e.target.value }))
+                    }
+                    placeholder="비우면 사이트명 | 부제목"
+                  />
+                </AdminField>
+                <AdminField label="설명 (meta description)">
+                  <AdminTextarea
+                    value={draft.seo?.description ?? ""}
+                    onChange={(e) =>
+                      setDraftRoot((prev) =>
+                        patchSeo(prev, { description: e.target.value })
+                      )
+                    }
+                    placeholder="비우면 히어로 설명 사용"
+                  />
+                </AdminField>
+                <AdminField label="OG 이미지 URL">
+                  <AdminInput
+                    value={draft.seo?.ogImage ?? ""}
+                    onChange={(e) =>
+                      setDraftRoot((prev) => patchSeo(prev, { ogImage: e.target.value }))
+                    }
+                    placeholder="비우면 히어로 배경 이미지"
+                  />
+                </AdminField>
+                <AdminField label="키워드 (쉼표 구분)">
+                  <AdminInput
+                    value={draft.seo?.keywords ?? ""}
+                    onChange={(e) =>
+                      setDraftRoot((prev) => patchSeo(prev, { keywords: e.target.value }))
                     }
                   />
                 </AdminField>
@@ -784,6 +876,7 @@ export function AdminPanel() {
         </main>
 
         <AdminLivePreview
+          draft={draft}
           activeSection={section}
           mobileOpen={previewOpen}
           onToggleMobile={() => setPreviewOpen((o) => !o)}

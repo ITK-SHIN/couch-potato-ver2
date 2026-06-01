@@ -126,12 +126,23 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ---
 
+## (선택) SEO·검색 노출 (Vercel Environment Variables)
+
+| 변수 | 설명 |
+|------|------|
+| `VITE_SITE_URL` | 배포 URL (예: `https://xxx.vercel.app`) — OG·canonical |
+| `VITE_ALLOW_INDEXING` | `false`면 noindex (스테이징). 미설정 시 **검색 허용** |
+
+관리자 **히어로** 탭 하단 **검색·SNS (SEO)** 에서 제목·설명을 직접 입력할 수 있습니다. **저장·공개 반영** 후에만 방문자·검색엔진에 반영됩니다.
+
+---
+
 ## 요약
 
 ```
-관리자 저장 → Supabase site_content (JSON)
-공개 사이트  → 같은 DB에서 읽기 → 모든 방문자에게 동일
-이미지       → Supabase Storage (media 버킷)
+관리자 편집 → 로컬 초안 (미리보기만)
+저장·공개 반영 → Supabase site_content (JSON) → 모든 방문자
+이미지         → Supabase Storage (media 버킷)
 ```
 
 문제가 있으면 Supabase **Logs** (API / Auth)와 브라우저 **F12 → Console** 오류 메시지를 확인하세요.

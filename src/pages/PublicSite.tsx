@@ -1,9 +1,10 @@
 import { PageLoader } from "../components/PageLoader";
 import { SitePageContent } from "../components/SitePageContent";
+import { SiteSeo } from "../components/SiteSeo";
 import { useSiteContent } from "../context/SiteContentContext";
 
 export function PublicSite() {
-  const { loading } = useSiteContent();
+  const { content, loading } = useSiteContent();
 
   if (loading) {
     return (
@@ -14,5 +15,10 @@ export function PublicSite() {
     );
   }
 
-  return <SitePageContent />;
+  return (
+    <>
+      <SiteSeo content={content} />
+      <SitePageContent />
+    </>
+  );
 }

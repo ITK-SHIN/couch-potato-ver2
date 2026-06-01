@@ -6,7 +6,7 @@ import {
   MessageCircle,
   CheckCircle,
 } from "lucide-react";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 import { sendContactEmail } from "../../lib/sendContactEmail";
 
 const emptyForm = {
@@ -19,7 +19,7 @@ const emptyForm = {
 };
 
 export function ContactSection() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const c = content.contact;
   const [form, setForm] = useState(emptyForm);
   const [submitted, setSubmitted] = useState(false);

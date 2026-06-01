@@ -6,11 +6,11 @@ import { ProcessSection } from "../app/components/ProcessSection";
 import { PortfolioSection } from "../app/components/PortfolioSection";
 import { ContactSection } from "../app/components/ContactSection";
 import { Footer } from "../app/components/Footer";
-import { useSiteContent } from "../context/SiteContentContext";
+import { useSiteContentDisplay } from "../context/SiteContentDisplayContext";
 
 /** 공개 사이트·관리자 미리보기에서 공통으로 쓰는 페이지 본문 */
 export function SitePageContent() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
 
   return (
     <div className="min-h-screen bg-background text-foreground">

@@ -1,12 +1,12 @@
 import { Instagram, Mail, MessageCircle, Phone } from "lucide-react";
-import { useSiteContent } from "../../context/SiteContentContext";
+import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 
 const scrollTo = (href: string) => {
   document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
 };
 
 export function Footer() {
-  const { content } = useSiteContent();
+  const content = useSiteContentDisplay();
   const f = content.footer;
   const taglineLines = f.tagline.split("\n");
 

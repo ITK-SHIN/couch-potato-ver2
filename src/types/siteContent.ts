@@ -51,7 +51,17 @@ export interface PortfolioItem {
   videoUrl?: string;
 }
 
+/** 검색·SNS 메타 (비우면 히어로 필드로 자동 생성) */
+export interface SiteSeoFields {
+  siteName?: string;
+  title?: string;
+  description?: string;
+  ogImage?: string;
+  keywords?: string;
+}
+
 export interface SiteContent {
+  seo?: SiteSeoFields;
   hero: {
     badge: string;
     title: string;
