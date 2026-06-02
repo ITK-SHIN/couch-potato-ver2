@@ -11,21 +11,11 @@ export function ServiceSection() {
     <section id="service" className="py-32 px-6 bg-secondary">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <span
-            className="text-primary"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "0.9rem", letterSpacing: "0.3em" }}
-          >
-            SERVICE
-          </span>
+          <span className="section-label">SERVICE</span>
           <div className="flex-1 h-px bg-border" />
         </div>
         <div className="mb-20">
-          <h2
-            className="text-foreground leading-tight mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
-          >
-            {title}
-          </h2>
+          <h2 className="section-title text-foreground mb-4">{title}</h2>
           <p className="text-muted-foreground" style={{ fontSize: "1rem" }}>
             {subtitle}
           </p>

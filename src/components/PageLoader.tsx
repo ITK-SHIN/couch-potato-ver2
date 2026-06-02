@@ -25,14 +25,7 @@ export function PageLoader({
           Video Production Studio
         </p>
 
-        <h1
-          className="text-foreground mb-10 leading-none"
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(2.5rem, 8vw, 4rem)",
-            letterSpacing: "0.1em",
-          }}
-        >
+        <h1 className="brand-wordmark hero-title text-foreground mb-10 text-[clamp(2.5rem,8vw,4rem)]">
           COUCHPOTATO
         </h1>
 

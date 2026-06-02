@@ -112,12 +112,7 @@ export function AdminPanel() {
         style={{ ["--admin-header-h" as string]: "57px" }}
       >
         <div className="flex items-center gap-4">
-          <span
-            className="text-foreground"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.25rem", letterSpacing: "0.06em" }}
-          >
-            관리자
-          </span>
+          <span className="brand-wordmark text-xl text-foreground">관리자</span>
           <Link
             to="/"
             target="_blank"

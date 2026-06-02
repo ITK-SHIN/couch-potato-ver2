@@ -35,14 +35,7 @@ export function SitePageContent() {
                   className="w-full h-full object-contain object-center transition-transform duration-700 group-hover:scale-105"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div
-                  className="absolute bottom-4 left-4 text-white/20"
-                  style={{
-                    fontFamily: "'Bebas Neue', sans-serif",
-                    fontSize: "4rem",
-                    lineHeight: 1,
-                  }}
-                >
+                <div className="absolute bottom-4 left-4 font-display text-white/20 text-6xl leading-none">
                   {h.num}
                 </div>
               </div>

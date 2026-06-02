@@ -13,24 +13,14 @@ export function AboutSection() {
     <section id="about" className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-20">
-          <span
-            className="text-primary"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "0.9rem", letterSpacing: "0.3em" }}
-          >
-            ABOUT
-          </span>
+          <span className="section-label">ABOUT</span>
           <div className="flex-1 h-px bg-border" />
         </div>
 
         <div className="grid md:grid-cols-2 gap-16 mb-24">
           <div>
-            <h2
-              className="text-foreground mb-6 leading-tight"
-              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
-            >
-              {about.heading}
-            </h2>
-            <p className="text-muted-foreground leading-relaxed" style={{ fontSize: "1.05rem" }}>
+            <h2 className="section-title text-foreground mb-6">{about.heading}</h2>
+            <p className="text-muted-foreground leading-relaxed text-[1.05rem]">
               {about.intro}
             </p>
           </div>

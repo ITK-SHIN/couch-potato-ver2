@@ -34,10 +34,7 @@ export function AdminLogin() {
   return (
     <div className="min-h-screen bg-background flex items-center justify-center px-6">
       <div className="w-full max-w-md border border-border bg-card p-8">
-        <h1
-          className="text-foreground text-center mb-2"
-          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "2rem", letterSpacing: "0.08em" }}
-        >
+        <h1 className="brand-wordmark text-3xl text-foreground text-center mb-2">
           COUCHPOTATO
         </h1>
         <p className="text-muted-foreground text-sm text-center mb-8">사이트 관리 로그인</p>

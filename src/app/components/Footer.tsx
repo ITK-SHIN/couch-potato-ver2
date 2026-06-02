@@ -1,4 +1,5 @@
 import { Instagram, Mail, MessageCircle, Phone } from "lucide-react";
+import { BrandLogo } from "../../components/BrandLogo";
 import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 
 const scrollTo = (href: string) => {
@@ -15,15 +16,8 @@ export function Footer() {
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-14 lg:flex-row lg:items-end lg:justify-between">
           <div className="max-w-md">
-            <h3
-              className="text-foreground mb-4"
-              style={{
-                fontFamily: "'Bebas Neue', sans-serif",
-                fontSize: "clamp(2rem, 5vw, 2.5rem)",
-                letterSpacing: "0.08em",
-              }}
-            >
-              COUCHPOTATO
+            <h3 className="mb-5">
+              <BrandLogo variant="footer" />
             </h3>
             <p className="text-muted-foreground text-sm leading-relaxed mb-8">
               {taglineLines.map((line, i) => (

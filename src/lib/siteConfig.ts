@@ -14,3 +14,6 @@ export function allowSearchIndexing(): boolean {
 }
 
 export const DEFAULT_SITE_NAME = "코치포테이토";
+
+/** public/ 브랜드 로고 (네비·히어로) */
+export const BRAND_LOGO_SRC = "/카우치포테이토로고.png";

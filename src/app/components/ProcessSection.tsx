@@ -18,21 +18,11 @@ export function ProcessSection() {
     <section id="process" className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <span
-            className="text-primary"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "0.9rem", letterSpacing: "0.3em" }}
-          >
-            PROCESS
-          </span>
+          <span className="section-label">PROCESS</span>
           <div className="flex-1 h-px bg-border" />
         </div>
         <div className="mb-16">
-          <h2
-            className="text-foreground leading-tight mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
-          >
-            {title}
-          </h2>
+          <h2 className="section-title text-foreground mb-4">{title}</h2>
           <p className="text-muted-foreground">{subtitle}</p>
         </div>
 
@@ -63,15 +53,7 @@ export function ProcessSection() {
                 fit={imageFit}
                 aspectRatio="4/3"
               />
-              <div
-                className="absolute bottom-4 left-4 text-white pointer-events-none select-none z-10"
-                style={{
-                  fontFamily: "'Bebas Neue', sans-serif",
-                  fontSize: "clamp(3rem, 12vw, 5rem)",
-                  opacity: 0.12,
-                  lineHeight: 1,
-                }}
-              >
+              <div className="absolute bottom-4 left-4 font-display text-white pointer-events-none select-none z-10 text-[clamp(3rem,12vw,5rem)] leading-none opacity-[0.12]">
                 {step.num}
               </div>
             </div>
@@ -83,10 +65,7 @@ export function ProcessSection() {
               >
                 {step.sub}
               </p>
-              <h3
-                className="text-foreground mb-8"
-                style={{ fontSize: "clamp(1.5rem, 3vw, 2.5rem)", fontWeight: 700 }}
-              >
+              <h3 className="font-display font-bold text-foreground mb-8 text-[clamp(1.5rem,3vw,2.5rem)] leading-tight">
                 {step.title}
               </h3>
               <ul className="space-y-4">

@@ -107,22 +107,12 @@ export function PortfolioSection() {
 
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <span
-            className="text-primary"
-            style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "0.9rem", letterSpacing: "0.3em" }}
-          >
-            PORTFOLIO
-          </span>
+          <span className="section-label">PORTFOLIO</span>
           <div className="flex-1 h-px bg-border" />
         </div>
         <div className="flex flex-col md:flex-row md:items-end justify-between mb-12">
           <div>
-            <h2
-              className="text-foreground leading-tight mb-2"
-              style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
-            >
-              {title}
-            </h2>
+            <h2 className="section-title text-foreground mb-2">{title}</h2>
             <p className="text-muted-foreground text-sm">{subtitle}</p>
           </div>
           <div className="flex flex-wrap gap-2 mt-6 md:mt-0">

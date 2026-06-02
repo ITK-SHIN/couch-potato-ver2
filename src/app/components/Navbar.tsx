@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import { BrandLogo } from "../../components/BrandLogo";
 
 const navItems = [
   { label: "홈", href: "#home" },
@@ -35,10 +36,10 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-6 flex items-center justify-between h-16">
         <button
           onClick={() => handleClick("#home")}
-          className="text-foreground hover:text-primary transition-colors"
-          style={{ fontFamily: "'Bebas Neue', sans-serif", fontSize: "1.5rem", letterSpacing: "0.1em" }}
+          className="transition-opacity hover:opacity-85"
+          aria-label="홈으로 이동"
         >
-          COUCHPOTATO
+          <BrandLogo variant="nav" />
         </button>
 
         {/* Desktop nav */}

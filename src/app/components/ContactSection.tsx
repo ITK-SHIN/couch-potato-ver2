@@ -63,25 +63,11 @@ export function ContactSection() {
     <section id="contact" className="py-32 px-6">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
-          <span
-            className="text-primary"
-            style={{
-              fontFamily: "'Bebas Neue', sans-serif",
-              fontSize: "0.9rem",
-              letterSpacing: "0.3em",
-            }}
-          >
-            CONTACT
-          </span>
+          <span className="section-label">CONTACT</span>
           <div className="flex-1 h-px bg-border" />
         </div>
         <div className="mb-16">
-          <h2
-            className="text-foreground leading-tight mb-4"
-            style={{ fontSize: "clamp(2rem, 4vw, 3rem)", fontWeight: 700 }}
-          >
-            {c.title}
-          </h2>
+          <h2 className="section-title text-foreground mb-4">{c.title}</h2>
           <p className="text-muted-foreground">{c.subtitle}</p>
         </div>
 

@@ -1,4 +1,5 @@
 import { ChevronDown } from "lucide-react";
+import { BrandLogo } from "../../components/BrandLogo";
 import { useSiteContentDisplay } from "../../context/SiteContentDisplayContext";
 
 export function HeroSection() {
@@ -25,32 +26,14 @@ export function HeroSection() {
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-background" />
 
       <div className="relative z-10 text-center px-6 max-w-5xl mx-auto">
-        <p
-          className="text-primary text-sm tracking-widest uppercase mb-6"
-          style={{ letterSpacing: "0.3em" }}
-        >
-          {hero.badge}
-        </p>
-        <h1
-          className="text-foreground mb-6 leading-none"
-          style={{
-            fontFamily: "'Bebas Neue', sans-serif",
-            fontSize: "clamp(3.5rem, 10vw, 9rem)",
-            letterSpacing: "0.05em",
-          }}
-        >
-          {hero.title}
+        <p className="section-label mb-5 md:mb-6">{hero.badge}</p>
+        <h1 className="mb-7 md:mb-8 flex justify-center">
+          <BrandLogo variant="hero" />
         </h1>
-        <p
-          className="text-foreground/80 mb-4 leading-relaxed"
-          style={{ fontSize: "clamp(1.1rem, 2.5vw, 1.6rem)", fontWeight: 300 }}
-        >
+        <p className="text-foreground/80 mb-4 text-lg md:text-xl lg:text-2xl font-light leading-relaxed">
           {hero.subtitle}
         </p>
-        <p
-          className="text-muted-foreground mb-12"
-          style={{ fontSize: "clamp(0.9rem, 1.5vw, 1.1rem)" }}
-        >
+        <p className="text-muted-foreground mb-12 text-base md:text-lg leading-relaxed max-w-2xl mx-auto">
           {hero.description}
         </p>
 
@@ -84,8 +67,8 @@ export function HeroSection() {
       </button>
 
       <div
-        className="absolute bottom-10 right-8 text-muted-foreground hidden md:block"
-        style={{ fontSize: "0.7rem", letterSpacing: "0.2em", writingMode: "vertical-rl" }}
+        className="absolute bottom-10 right-8 text-muted-foreground hidden md:block text-[0.7rem] tracking-[0.2em] font-medium"
+        style={{ writingMode: "vertical-rl" }}
       >
         {hero.cornerLabel}
       </div>
